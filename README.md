@@ -6,6 +6,7 @@ __NOTE__. Please notes. This project is active development. At now, there is no 
 We will demonstrate the basic idea of our project by example.
 
 Let there is the `LaTeX` theme 'myarticle'. It has the following files:
+
 myarticle_template.tex - jinja2 template
 ```latex
 \documentclass[twoside]{article}
@@ -32,6 +33,7 @@ title: Hello document
 ```
 
 Because the mypaper.source.tex does not exist, in the result of the running script would be created files:
+
 mypaper.source.tex:
 ```latex
 %!TEX root=mypaper.tex
@@ -50,6 +52,6 @@ mypaper.tex:
     \VAR{mypaper.source.tex}
 \end{document}
 ```
-mystyle.sty
+mytitle.sty
 
 And now you can compile the LaTeX source.
