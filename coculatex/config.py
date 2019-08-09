@@ -1,98 +1,89 @@
-"""
-    Configuration variables for ALL modules
-"""
-import os
-import logging
-from collections import namedtuple
+"""Configuration variables for ALL modules."""
 
+from os import path
 
-LOG = logging.getLogger(__name__)
+# The default path to the user configuration folder
+USER_CONFIG_PATH = path.realpath(path.expanduser('~/.coculatex'))
 
-# ------------JINJA2 Config----------------------------------------------------
+# The working directory
+WORKING_DIRECTORY = ''  # the default is the current folder
 
-Jinja2Config = namedtuple(
-    'jinja2',
-    ('BLOCK_START_STRING BLOCK_END_STRING VARIABLE_START_STRING '
-     'VARIABLE_END_STRING COMMENT_START_STRING COMMENT_END_STRING '
-     'LINE_STATEMENT_PREFIX LINE_COMMENT_PREFIX TRIM_BLOCKS AUTOESCAPE'))
+# The list of the paths to the directories containing themes
+THEMES_PATHS = [path.join(USER_CONFIG_PATH, 'themes')]
 
+# ------------Jinja2 template config-------------------------------------------
 
-JINJA2_DEFAULT_CONFIG = Jinja2Config(
-    BLOCK_START_STRING=r'\BLOCK{',
-    BLOCK_END_STRING='}',
-    VARIABLE_START_STRING=r'\VAR{',
-    VARIABLE_END_STRING='}',
-    COMMENT_START_STRING=r'\#{',
-    COMMENT_END_STRING='}',
-    LINE_STATEMENT_PREFIX=r'%%',
-    LINE_COMMENT_PREFIX=r'%#',
-    TRIM_BLOCKS=True,
-    AUTOESCAPE=False)
+J2CONFIG = {
+    'block_start_string': r'\BLOCK{',
+    'block_end_string': '}',
+    'variable_start_string': r'\VAR{',
+    'variable_end_string': '}',
+    'comment_start_string': r'\#{',
+    'comment_end_string': '}',
+    'line_statement_prefix': r'%%',
+    'line_comment_prefix': r'%#',
+    'trim_blocks': True,
+    'autoescape': False
+}
 
+# The LaTeX template config
+LTCONFIG = {
+    'config_prefix': r'%%='  # prefix for the line
+                             # contained the template variables
+}
 
-# ------------LaTeX Template Config--------------------------------------------
+# The names of the configuration file's sections
+SECTION_NAMES_CONFIG = {
+    'name': 'name',  # the name of the block containing the theme's name
+    'config_file': 'config.yaml',  # name of the main config file
+    'subthemes': 'subthemes',  # the name of the subthemes block in the config
+                               # the subthemes block format:
+                               # subtheme_name: name_of_root_file
+    'parameters': 'parameters',  # the name of the block containing the values
+                                 #  of the template variables
+    'description': 'description',  # the name of the block
+                                   # containing the theme's description
+    'root_file': 'root_file',  # the name of the block contained
+                               # the root file name
+    'tex': 'tex',  # the name of block containing the TeX compiling options
+    'include_files': 'include_files',  # the name of the block containing
+                                       # the dictionary of the additional files
+                                       # which would be copied to
+                                       # the working directory
+                                       # format:
+                                       # destination_file: source_file
+    'readme': 'readme',  # the name of the block containing the name of
+                         # the readme file
+    'example': 'example',  # the name of the block containing the relaitive
+                           # theme directory path to the example file
+    'jinja2_config': 'jinja2_config'  # the name of the block containing
+                                      # the configuration of jinja2 template
+}
 
-LatexTemplateConfig = namedtuple(
-    'latex_template',
-    'LINE_STATEMENT_PREFIX')
+# The theme's configuration
 
+THEME_CONFIG = {
+    'path': '',  # the path to the theme
+    SECTION_NAMES_CONFIG['name']: '',  # the theme's name
+    SECTION_NAMES_CONFIG['subthemes']: {},  # the subthemes
+    SECTION_NAMES_CONFIG['parameters']: {},  # the template's parameters
+    SECTION_NAMES_CONFIG['description']: '',  # the description of the theme
+    SECTION_NAMES_CONFIG['root_file']: '',  # the root file name
+    SECTION_NAMES_CONFIG['tex']: {},  # the compiling TeX options
+    SECTION_NAMES_CONFIG['include_files']: {},  # the theme's addition files
+    SECTION_NAMES_CONFIG['readme']: '',  # the readme file name
+    SECTION_NAMES_CONFIG['example']: '',  # the relative path to the example
+    SECTION_NAMES_CONFIG['jinja2_config']: {}  # the jinja2's configuration
+}
 
-LATEX_TEMPLATE_DEFAULT_CONFIG = LatexTemplateConfig(
-    LINE_STATEMENT_PREFIX=r'%%=')
+# The list of the registered themes
+REGISTERED_THEMES = {}
 
-YAML_LINE_PREFIX = r'%%='
-# -----------------------------------------------------------------------------
+# The files to dump configuration
 
-THEMES_DIRECTORY = os.path.realpath(os.path.expanduser('~/latextm_themes'))
-
-THEME_CONFIG_FILE_NAME = 'config.yaml'
-
-THEME_SUBTHEMES = 'subthemes'
-
-OUTPUT_DIR = ''
-
-DEFAULT_ROOT_TEX = 'root.tex'
-
-LTM_FILE_EXTENSION = 'ltm'
-
-VERSION_STRING_TEMPLATE = "CoCuLaTeX {version} by Ivan Chizhov"
-
-
-def config_iter(config):
-    """
-        Iteration over configuration values
-    """
-    for attr_name, attr_value in _namedtuple_iter(config):
-        yield attr_name.lower(), attr_value
-
-
-def _namedtuple_iter(named_tuple):
-    """
-        Iteration over attributes and values of namedtuple object
-    """
-    for attr_name in named_tuple._fields:
-        yield attr_name, getattr(named_tuple, attr_name)
-
-
-def set_user_config(config, user_config):
-    """
-        Function set user configuration
-        config - `namedtuple` config instance
-        user_config - `dict` with user config
-    """
-    LOG.debug('Changing configuration: %r', config)
-    user_config = user_config.get(config.__class__.__name__, {})
-    LOG.debug('Using user configuration: %s', user_config)
-    new_config = {}
-    for attr_name, attr_value in _namedtuple_iter(config):
-        LOG.debug('Processing attribute `%s` (default value = %s)',
-                  attr_name, attr_value)
-        value = user_config.get(attr_name.lower())
-        LOG.debug('User value of attribute `%s`: %s', attr_name, value)
-        new_config[attr_name] = (value
-                                 if isinstance(value, type(attr_value))
-                                 else attr_value)
-        LOG.debug('New value of attribute `%s`: %s',
-                  attr_name, new_config[attr_name])
-    LOG.debug('Final configuration: %s', new_config)
-    return config.__class__(**new_config)
+DUMP_FILES = {
+    'registered_themes': path.join(USER_CONFIG_PATH,
+                                   '.registered_themes.yaml'),
+    'themes_directories': path.join(USER_CONFIG_PATH,
+                                    '.themes_directories.yaml')
+}
