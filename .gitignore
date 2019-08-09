@@ -1,5 +1,6 @@
 Pipfile.lock
 *.egg-info
+*.pyc
 .vscode/settings.json
 build/
 dist/
