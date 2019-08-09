@@ -12,8 +12,6 @@ pydocstyle = "*"
 [packages]
 pyyaml = "*"
 "jinja2" = "*"
-colorama = "*"
-latextm = {editable = true,path = "."}
 
 [requires]
 python_version = "3"
