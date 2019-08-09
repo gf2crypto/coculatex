@@ -8,8 +8,14 @@ USER_CONFIG_PATH = path.realpath(path.expanduser('~/.coculatex'))
 # The working directory
 WORKING_DIRECTORY = ''  # the default is the current folder
 
-# The list of the paths to the directories containing themes
-THEMES_PATHS = [path.join(USER_CONFIG_PATH, 'themes')]
+# The path to the directory containing themes
+THEMES_PATH = path.join(USER_CONFIG_PATH, 'themes')
+
+# The separator of the name parts
+THEME_NAME_SEP = ':'
+
+# The name of the theme configuration file
+THEME_CONFIG_FILENAME = 'config.yaml'
 
 # ------------Jinja2 template config-------------------------------------------
 
@@ -34,8 +40,6 @@ LTCONFIG = {
 
 # The names of the configuration file's sections
 SECTION_NAMES_CONFIG = {
-    'name': 'name',  # the name of the block containing the theme's name
-    'config_file': 'config.yaml',  # name of the main config file
     'subthemes': 'subthemes',  # the name of the subthemes block in the config
                                # the subthemes block format:
                                # subtheme_name: name_of_root_file
@@ -64,7 +68,7 @@ SECTION_NAMES_CONFIG = {
 
 THEME_CONFIG = {
     'path': '',  # the path to the theme
-    SECTION_NAMES_CONFIG['name']: '',  # the theme's name
+    'name': '',  # the theme's name
     SECTION_NAMES_CONFIG['subthemes']: {},  # the subthemes
     SECTION_NAMES_CONFIG['parameters']: {},  # the template's parameters
     SECTION_NAMES_CONFIG['description']: '',  # the description of the theme
