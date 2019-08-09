@@ -1,7 +1,5 @@
 #!/usr/bin/env python
-"""
-    Setup tools for LaTeXTM
-"""
+"""Setup tools for CoCuLaTeX."""
 
 from os.path import (join,
                      dirname)
@@ -9,15 +7,17 @@ from setuptools import (setup,
                         find_packages)
 import coculatex
 
+README_FILE = 'README.md'
+
 
 setup(name=coculatex.__name__,
       version=coculatex.__version__,
-      description='The cookie cutters for the LaTeX',
-      author='Ivan Chizhov',
-      author_email='ivchizhov@gmail.com',
+      description=coculatex.__description__,
+      author=coculatex.__author__,
+      author_email=coculatex.__email__,
       url='',
       packages=find_packages(),
-      long_description=open(join(dirname(__file__), 'README.md')).read(),
+      long_description=open(join(dirname(__file__), README_FILE)).read(),
       install_requires=[
           'pyyaml>=3.13',
           'jinja2>=2.10'
