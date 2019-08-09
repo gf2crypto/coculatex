@@ -1,0 +1,82 @@
+%% extends "base.tex"
+
+\BLOCK{block lang}english, russian\BLOCK{endblock lang}
+
+\BLOCK{- block theorem_name}
+Теорема
+\BLOCK{- endblock theorem_name}
+
+\BLOCK{- block lemma_name}
+Лемма
+\BLOCK{- endblock lemma_name}
+
+\BLOCK{- block corollary_name}
+Следствие
+\BLOCK{- endblock corollary_name}
+
+\BLOCK{- block proposition_name}
+Предложение
+\BLOCK{- endblock proposition_name}
+
+\BLOCK{- block assertion_name}
+Утверждение
+\BLOCK{- endblock assertion_name}
+
+\BLOCK{- block definition_name}
+Определение
+\BLOCK{- endblock definition_name}
+
+\BLOCK{- block remark_name}
+Замечание
+\BLOCK{- endblock remark_name}
+
+\BLOCK{- block example_name}
+Пример
+\BLOCK{- endblock example_name}
+
+\BLOCK{- block title}\VAR{ru.title}\\\VAR{super()}\BLOCK{- endblock title}
+
+
+\BLOCK{block authors}
+  %%- set n_authors = ru.authors|length
+  %% for author in ru.authors
+  %%-     if 'name' in author
+\VAR{author['name']}
+  %%-     endif
+  %%-     if 'institute' in author or 'email' in author
+\footnote{
+  %%-         if 'institute' in author
+Место работы: \VAR{author['institute']}
+  %%-             if 'email' in author
+,
+  %%-             endif
+  %%-         endif
+  %%-         if 'email' in author
+e-mail: \VAR{author['email']}
+  %%-         endif
+}
+  %%-    endif
+  %%-    if loop.index < n_authors
+,
+  %%     endif
+  %%endfor
+\\
+\VAR{super()}
+\BLOCK{- endblock authors}
+
+
+\BLOCK{ block udk}
+УДК \VAR{udk}
+\BLOCK{ endblock udk}
+
+\BLOCK{block abstract}
+\VAR{ru.abstract}\\
+\VAR{super()}
+\BLOCK{endblock abstract}
+
+\BLOCK{block keywords}
+
+\textbf{Ключевые слова:} \VAR{ru.keywords}
+
+\VAR{super()}
+\BLOCK{endblock keywords}
