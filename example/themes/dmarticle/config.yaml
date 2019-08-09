@@ -1,0 +1,64 @@
+# Theme configuration file
+
+
+# version of theme
+version: 2.0
+
+# short description ot the theme
+
+description: |
+  The theme of an article for the Descrete Mathematic Journal (Russia).
+  The default language is english.
+
+# tex options, it is used while tex is compiling
+tex:
+  options: [
+    '-shell-escape'
+  ]
+  program: 'pdflatex'
+  encoding: 'utf8'
+
+# include additional files in template
+include_files:
+  amsbib.sty: 'amsbib.sty'
+  bibliography.bib: 'bibliography.bib'
+
+# default root file of theme
+root_file: 'en.tex'
+
+# readme file, it can override for variations of template 
+readme: 'README.txt'
+
+# The minimal example for demostration purpose
+
+# example: 'example.tex'
+
+# default parameters of theme
+parameters:
+  # title
+  title: 'This is an article title'
+  # list of authors
+  authors:
+    -
+      name: Ivan Ivanov  # name of author
+      institute: 'Moscow State University'  # work place of author
+      email: ivanov@cs.msu.ru  # email of author
+    -
+      name: Mikhail Petrov
+      institute: 'Stanford University'
+      email: mik@stanford.edu
+
+  # abstract
+  abstract: 'This paper is about nothing'
+
+  # list of keywords
+  keywords: 'science, nothing'
+
+  # number of grant
+  thanks: ''
+
+# define some subthemes
+
+subthemes: 
+  ru: 'ru'
+  en: 'en.yaml'

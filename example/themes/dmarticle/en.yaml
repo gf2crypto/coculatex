@@ -1,0 +1,4 @@
+# subtheme 'en'
+# It defines the english article template for journal "Discrete Mathematics"
+
+root_file: 'en.tex'  # set the template file

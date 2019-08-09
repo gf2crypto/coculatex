@@ -1,0 +1,99 @@
+\documentclass[twoside]{article}
+\usepackage[\BLOCK{block lang}\BLOCK{endblock lang}]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{amstext}
+\usepackage{amsmath}
+\usepackage{amsbib}
+\usepackage{graphicx}
+\graphicspath{{pictures/}}
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{\BLOCK{- block theorem_name}\BLOCK{- endblock theorem_name}}
+\newtheorem{lemma}{\BLOCK{- block lemma_name}\BLOCK{- endblock lemma_name}}
+\newtheorem{corollary}{\BLOCK{block corollary_name}\BLOCK{endblock corollary_name}}
+\newtheorem{proposition}{\BLOCK{block proposition_name}\BLOCK{endblock proposition_name}}
+\newtheorem{assertion}{\BLOCK{block assertion_name}\BLOCK{endblock assertion_name}}
+\theoremstyle{definition}
+\newtheorem{definition}{\BLOCK{block definition_name}\BLOCK{endblock definition_name}}
+\newtheorem{remark}{\BLOCK{block remark_name}\BLOCK{endblock remark_name}}
+\newtheorem{example}{\BLOCK{block example_name}\BLOCK{endblock example_name}}
+
+\sloppy
+
+%% if tex_preambule is defined:
+\VAR{tex_preambule}
+%% endif
+
+\begin{document}
+
+\title{\BLOCK{block title}\VAR{title}\BLOCK{endblock title}}
+
+\author{
+
+\BLOCK{- block authors}
+	%%- set n_authors = authors|length
+	%% for author in authors
+	%%-     if 'name' in author
+\VAR{author['name']}
+	%%-     endif
+	%%-     if 'institute' in author or 'email' in author
+\footnote{
+	%%-         if 'institute' in author
+Job: \VAR{author['institute']}
+	%%-             if 'email' in author
+,
+	%%-             endif
+	%%-         endif
+	%%-         if 'email' in author
+e-mail: \VAR{author['email']}
+	%%-         endif
+}
+	%%-    endif
+	%%-    if loop.index < n_authors
+,
+	%%     endif
+	%%endfor
+\BLOCK{- endblock authors}
+}
+
+\date{}
+
+\maketitle
+
+
+\BLOCK{ block udk}\BLOCK{endblock udk}
+
+
+
+%% if support is defined
+\VAR{thanks}
+%% endif
+
+%% if abstract is defined
+\begin{abstract}
+\BLOCK{block abstract}\VAR{abstract}\BLOCK{endblock abstract}
+\end{abstract}
+%% endif
+
+%% if keywords is defined
+\BLOCK{block keywords}
+\textbf{Keywords:} \VAR{keywords}
+\BLOCK{endblock keywords}
+%% endif
+
+%% if tex_main is defined
+\VAR{tex_main}
+%% endif
+
+% bibliography
+\begin{thebibliography}{99}
+
+\input{bibliography.bib}
+
+\end{thebibliography}
+
+\end{document}
+% the end
