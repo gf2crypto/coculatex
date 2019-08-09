@@ -1,0 +1,19 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[dev-packages]
+ipython = "*"
+pylint = "*"
+flake8 = "*"
+pydocstyle = "*"
+
+[packages]
+pyyaml = "*"
+"jinja2" = "*"
+colorama = "*"
+latextm = {editable = true,path = "."}
+
+[requires]
+python_version = "3"
