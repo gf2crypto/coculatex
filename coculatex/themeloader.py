@@ -59,7 +59,7 @@ def load_theme(name):
     subthemes = splited_names[1:]
     theme_config = load_theme_from_path(path.join(
         theme_path,
-        config.THEME_CONFIG_FILENAME))
+        path.normpath(config.THEME_CONFIG_FILENAME)))
     LOG.debug('The config of the theme `%s`: `%s`',
               splited_names[0], theme_config)
     for theme in subthemes:
@@ -69,37 +69,32 @@ def load_theme(name):
         LOG.debug('The config file of the subtheme `%s`: %s',
                   theme, config_filename)
         subtheme_config = load_theme_from_path(
-            path.join(theme_path, config_filename))
+            path.join(theme_path, path.normpath(config_filename)))
         LOG.debug('The config of the subtheme %s: %s', theme, subtheme_config)
-        try:
-            theme_config[config.SECTION_NAMES_CONFIG['parameters']].update(
-                subtheme_config.get(config.SECTION_NAMES_CONFIG['parameters'],
-                                    {})
-                )
-        except TypeError:
-            LOG.debug('Cannot update the parameters of the parent theme. '
-                      'Wrong type of the parameters subsection: '
-                      'expected `dict`, not %s',
-                      type(
-                          subtheme_config[
-                              config.SECTION_NAMES_CONFIG['parameters']]))
-        except KeyError:
-            return {}
-        try:
-            theme_config[config.SECTION_NAMES_CONFIG['include_files']].update(
-                subtheme_config.get(
-                    config.SECTION_NAMES_CONFIG['include_files'], {})
-                )
-        except TypeError:
-            LOG.debug('Cannot update the `include_files` of the parent theme. '
-                      'Wrong type of the `include_files` subsection: '
-                      'expected `dict`, not %s',
-                      type(
-                          subtheme_config[
-                              config.SECTION_NAMES_CONFIG['include_files']]))
-        except KeyError:
-            return {}
+        __update_dict(theme_config, subtheme_config,
+                      ['parameters', 'include_files', 'jinja2_config'])
         LOG.debug('The value of the theme variables after '
                   'loading subtheme `%s`: `%s`',
                   theme, theme_config)
+        theme_config.update(subtheme_config)
     return theme_config
+
+
+def __update_dict(old, new, sections):
+    """Update the `old` dictionary with the values of the new.
+
+    :param: old - `dict`, old dictionary
+    :param: new - `dict`, new dictionary
+    :param: sections - `iist` of the section names of the dictionary
+                        which is will be updated
+    """
+    for sect in sections:
+        try:
+            old[config.SECTION_NAMES_CONFIG[sect]].update(
+                new.pop(config.SECTION_NAMES_CONFIG[sect], {})
+                )
+        except TypeError:
+            LOG.debug('Cannot update the %s of the parent theme. '
+                      'Wrong type of the subsection: '
+                      'expected `dict`',
+                      sect)
