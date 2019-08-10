@@ -3,11 +3,7 @@ import logging
 from os import path
 from yaml import safe_load
 from yaml.scanner import ScannerError
-from .config import (THEME_CONFIG,
-                     THEMES_PATH,
-                     THEME_NAME_SEP,
-                     THEME_CONFIG_FILENAME,
-                     SECTION_NAMES_CONFIG)
+from coculatex import config
 
 LOG = logging.getLogger(__name__)
 
@@ -21,11 +17,11 @@ def load_theme_from_iterable(iterable):
     Note! That function does not set the `path` and the `name`
           of the theme configuration
     """
-    theme_config = dict(THEME_CONFIG)
+    theme_config = dict(config.THEME_CONFIG)
     try:
         theme_config.update(
-            {key: value} for key, value in safe_load(iterable).items()
-            if key in THEME_CONFIG)
+            {key: value for key, value in safe_load(iterable).items()
+             if key in config.THEME_CONFIG})
     except ScannerError as error:
         LOG.debug('cannot load theme, error parse configuration `%s`: %s',
                   dict(iterable), error)
@@ -56,39 +52,43 @@ def load_theme(name):
     :param: `name` - the theme's name
     :return: the theme configuration dictionary (see `config.THEME_CONFIG`)
     """
-    LOG.debug('Load theme `%s` from path: `%s`', name, THEMES_PATH)
-    splited_names = name.split(THEME_NAME_SEP)
-    theme_path = path.join(THEMES_PATH, splited_names[0])
+    LOG.debug('Load theme `%s` from path: `%s`', name, config.THEMES_PATH)
+    splited_names = name.split(config.THEME_NAME_SEP)
+    theme_path = path.join(config.THEMES_PATH, splited_names[0])
     LOG.debug('The theme\'s path: %s', theme_path)
     subthemes = splited_names[1:]
-    theme_config = load_theme_from_path(path.join(theme_path,
-                                                  THEME_CONFIG_FILENAME))
+    theme_config = load_theme_from_path(path.join(
+        theme_path,
+        config.THEME_CONFIG_FILENAME))
     LOG.debug('The config of the theme `%s`: `%s`',
               splited_names[0], theme_config)
     for theme in subthemes:
         LOG.debug('Load subtheme `%s`', theme)
         config_filename = theme_config.get(
-            SECTION_NAMES_CONFIG['subthemes'], {}).get(theme, None)
+            config.SECTION_NAMES_CONFIG['subthemes'], {}).get(theme, None)
         LOG.debug('The config file of the subtheme `%s`: %s',
                   theme, config_filename)
         subtheme_config = load_theme_from_path(
             path.join(theme_path, config_filename))
         LOG.debug('The config of the subtheme %s: %s', theme, subtheme_config)
         try:
-            theme_config[SECTION_NAMES_CONFIG['parameters']].update(
-                subtheme_config.get(SECTION_NAMES_CONFIG['parameters'], {})
+            theme_config[config.SECTION_NAMES_CONFIG['parameters']].update(
+                subtheme_config.get(config.SECTION_NAMES_CONFIG['parameters'],
+                                    {})
                 )
         except TypeError:
             LOG.debug('Cannot update the parameters of the parent theme. '
                       'Wrong type of the parameters subsection: '
                       'expected `dict`, not %s',
                       type(
-                          subtheme_config[SECTION_NAMES_CONFIG['parameters']]))
+                          subtheme_config[
+                              config.SECTION_NAMES_CONFIG['parameters']]))
         except KeyError:
             return {}
         try:
-            theme_config[SECTION_NAMES_CONFIG['include_files']].update(
-                subtheme_config.get(SECTION_NAMES_CONFIG['include_files'], {})
+            theme_config[config.SECTION_NAMES_CONFIG['include_files']].update(
+                subtheme_config.get(
+                    config.SECTION_NAMES_CONFIG['include_files'], {})
                 )
         except TypeError:
             LOG.debug('Cannot update the `include_files` of the parent theme. '
@@ -96,10 +96,10 @@ def load_theme(name):
                       'expected `dict`, not %s',
                       type(
                           subtheme_config[
-                              SECTION_NAMES_CONFIG['include_files']]))
+                              config.SECTION_NAMES_CONFIG['include_files']]))
         except KeyError:
             return {}
         LOG.debug('The value of the theme variables after '
                   'loading subtheme `%s`: `%s`',
                   theme, theme_config)
-        return theme_config
+    return theme_config

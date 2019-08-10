@@ -68,7 +68,6 @@ SECTION_NAMES_CONFIG = {
 
 THEME_CONFIG = {
     'path': '',  # the path to the theme
-    'name': '',  # the theme's name
     SECTION_NAMES_CONFIG['subthemes']: {},  # the subthemes
     SECTION_NAMES_CONFIG['parameters']: {},  # the template's parameters
     SECTION_NAMES_CONFIG['description']: '',  # the description of the theme
