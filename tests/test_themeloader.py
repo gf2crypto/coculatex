@@ -46,7 +46,7 @@ class ThemeLoaderTestCase(unittest.TestCase):
 
         self.subtheme_a_config = (
             '{subthemes}:\n'
-            '    1: 1.yaml\n'
+            '    a1: 1.yaml\n'
             '{parameters}:\n'
             '    param1: test1a\n'
             '    param2: test2a\n'
@@ -69,7 +69,7 @@ class ThemeLoaderTestCase(unittest.TestCase):
         self.theme_alpha_a_config = (
             'path: {path}\n'
             '{subthemes}:\n'
-            '    1: 1.yaml\n'
+            '    a1: 1.yaml\n'
             '{parameters}:\n'
             '    param1: test1a\n'
             '    param2: test2a\n'
@@ -107,11 +107,12 @@ class ThemeLoaderTestCase(unittest.TestCase):
 
         self.theme_alpha_a_1_config = (
             'path: {path}\n'
+            '{subthemes}: {{}}\n'
             '{parameters}:\n'
             '    param1: test1a\n'
             '    param2: test2a\n'
             '    param3: newtest111\n'
-            '{description}: is `a` theme of the alpha subtheme\n'
+            '{description}: ""\n'
             '{root_file}: 1.tex\n'
             '{tex}:\n'
             '    option1: val1111\n'
@@ -122,8 +123,11 @@ class ThemeLoaderTestCase(unittest.TestCase):
             '    file1.tex: template_file1a.tex\n'
             '    file2.tex: template_file2a.tex\n'
             '    file3.tex: template_file3a.tex\n'
-            '{readme}: readmeA.txt\n'
-            '{example}: examples/a\n'
+            '{readme}: ""\n'
+            '{example}: ""\n'
+            '{jinja2_config}:\n'
+            '    autoescape: true\n'
+            '    line_comment_prefix:' r' "%%##"' '\n'
             ''.format(**config.SECTION_NAMES_CONFIG,
                       path=path.join(self.tempdir.name, 'alpha',
                                      'a', '1.yaml'))
@@ -131,6 +135,7 @@ class ThemeLoaderTestCase(unittest.TestCase):
         self.theme_alpha = safe_load(StringIO(self.theme_alpha_config))
         self.theme_alpha_a = safe_load(StringIO(self.theme_alpha_a_config))
         self.theme_alpha_a_1 = safe_load(StringIO(self.theme_alpha_a_1_config))
+        self.theme_alpha_a_1['description']
         self.make_diretory_tree()
 
     def make_diretory_tree(self):
@@ -151,6 +156,17 @@ class ThemeLoaderTestCase(unittest.TestCase):
         """Test load the root theme."""
         theme = load_theme('alpha')
         self.assertEqual(theme.items(), self.theme_alpha.items())
+
+    def test_load_subtheme(self):
+        """Test load the subtheme."""
+        theme = load_theme('alpha{sep}a'.format(sep=config.THEME_NAME_SEP))
+        self.assertEqual(theme.items(), self.theme_alpha_a.items())
+
+    def test_load_subsubtheme(self):
+        """Test load the subsubtheme."""
+        theme = load_theme(
+            'alpha{sep}a{sep}a1'.format(sep=config.THEME_NAME_SEP))
+        self.assertEqual(theme.items(), self.theme_alpha_a_1.items())
 
 
 if __name__ == '__main__':
