@@ -69,10 +69,11 @@ def load_theme(name):
         LOG.debug('The config file of the subtheme `%s`: %s',
                   theme, config_filename)
         subtheme_config = load_theme_from_path(
-            path.join(theme_path, path.normpath(config_filename)))
+            path.join(path.dirname(theme_config['path']),
+                      path.normpath(config_filename)))
         LOG.debug('The config of the subtheme %s: %s', theme, subtheme_config)
         __update_dict(theme_config, subtheme_config,
-                      ['parameters', 'include_files', 'jinja2_config'])
+                      ['parameters', 'include_files', 'jinja2_config', 'tex'])
         LOG.debug('The value of the theme variables after '
                   'loading subtheme `%s`: `%s`',
                   theme, theme_config)
