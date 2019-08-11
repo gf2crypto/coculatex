@@ -183,5 +183,81 @@ class ThemeLoaderTestCase(unittest.TestCase):
         self.assertEqual(theme.items(), self.theme_alpha.items())
 
 
+class ThemeIteratorTestCase(unittest.TestCase):
+    """Test Case for iteration over themes."""
+
+    def setUp(self):
+        """Prepartion for the test case."""
+        self.tempdir = TemporaryDirectory()
+        self.themes_config = {
+            'a': (
+                'path: {path}\n'
+                '{subthemes}:\n'
+                '    a1: a1.yaml\n'
+                '    a2: a2.yaml\n'
+                '    a3: a3.yaml\n'
+                ''.format(**config.SECTION_NAMES_CONFIG,
+                          path=path.join(self.tempdir.name,
+                                         'a', 'config.yaml'))
+            ),
+            'a1': (
+                'path: {path}\n'
+                '{subthemes}:\n'
+                '    a11: a11.yaml\n'
+                '    a12: a12.yaml\n'
+                ''.format(**config.SECTION_NAMES_CONFIG,
+                          path=path.join(self.tempdir.name,
+                                         'a', 'a1.yaml'))
+            ),
+            'a11': (
+                'path: {path}\n'
+                ''.format(path=path.join(self.tempdir.name,
+                                         'a', 'a11.yaml'))
+            ),
+            'a12': (
+                'path: {path}\n'
+                ''.format(path=path.join(self.tempdir.name,
+                                         'a', 'a12.yaml'))
+            ),
+            'a2': (
+                'path: {path}\n'
+                ''.format(path=path.join(self.tempdir.name,
+                                         'a', 'a2.yaml'))
+            ),
+            'a3': (
+                'path: {path}\n'
+                ''.format(path=path.join(self.tempdir.name,
+                                         'a', 'a3.yaml'))
+            ),
+            'b': (
+                'path: {path}\n'
+                '{subthemes}:\n'
+                '    b1: b1.yaml\n'
+                ''.format(**config.SECTION_NAMES_CONFIG,
+                          path=path.join(self.tempdir.name,
+                                         'b', 'config.yaml'))
+            ),
+            'b1': (
+                'path: {path}\n'
+                ''.format(path=path.join(self.tempdir.name,
+                                         'b', 'b1.yaml'))
+            ),
+            'c': (
+                'path: {path}\n'
+                ''.format(path=path.join(self.tempdir.name,
+                                         'c', 'config.yaml'))
+            ),
+        }
+        self.themes = {}
+
+    def make_files(self):
+        """Make directory tree."""
+        for (name, conf_str) in self.themes_config.items():
+            self.themes[name] = safe_load(StringIO(conf_str))
+            makedirs(path.dirname(self.themes[name][path]), exist_ok=True)
+            with open(self.themes[name], 'w') as file:
+                file.write('\n'.join(conf_str.split('\n')[1:]))
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=0)
