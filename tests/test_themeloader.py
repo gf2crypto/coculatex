@@ -168,6 +168,21 @@ class ThemeLoaderTestCase(unittest.TestCase):
             'alpha{sep}a{sep}a1'.format(sep=config.THEME_NAME_SEP))
         self.assertEqual(theme.items(), self.theme_alpha_a_1.items())
 
+    def test_theme_not_exits(self):
+        """Test load the subsubtheme."""
+        theme = load_theme('beta')
+        self.assertEqual(theme.items(), {}.items())
+
+    def test_subtheme_not_exits(self):
+        """Test load the subsubtheme."""
+        theme = load_theme('alpha{sep}beta'.format(sep=config.THEME_NAME_SEP))
+        self.assertEqual(theme.items(), self.theme_alpha.items())
+
+    def test_subtheme_config_not_exits(self):
+        """Test load the subsubtheme."""
+        theme = load_theme('alpha{sep}b'.format(sep=config.THEME_NAME_SEP))
+        self.assertEqual(theme.items(), self.theme_alpha.items())
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=0)
