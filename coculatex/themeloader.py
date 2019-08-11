@@ -65,7 +65,7 @@ def load_theme(name):
     for theme in subthemes:
         LOG.debug('Load subtheme `%s`', theme)
         config_filename = theme_config.get(
-            config.SECTION_NAMES_CONFIG['subthemes'], {}).get(theme, None)
+            config.SECTION_NAMES_CONFIG['subthemes'], {}).get(theme, '')
         LOG.debug('The config file of the subtheme `%s`: %s',
                   theme, config_filename)
         subtheme_config = load_theme_from_path(
