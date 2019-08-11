@@ -27,6 +27,9 @@ def load_theme_from_iterable(iterable):
         LOG.debug('cannot load theme, error parse configuration `%s`: %s',
                   dict(iterable), error)
         return {}
+    except AttributeError:
+        LOG.debug('Iterable does not contain any information.')
+        return {}
     return theme_config
 
 
