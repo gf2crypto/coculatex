@@ -1,7 +1,7 @@
 """Testing parser of arguments."""
 from io import StringIO
 import unittest
-from latextm.templates import extract_variables
+from coculatex.templates import extract_variables
 
 
 class ExtractVariablesTestCase(unittest.TestCase):
@@ -76,108 +76,12 @@ class ExtractVariablesTestCase(unittest.TestCase):
             r'\date{19 сентября 2018 года}''\n'
             )
 
-        self.jinja2_template = (
-            r"%%= jinja2:""\n"
-            r"%%=    block_start_string: '\BLOCK{'""\n"
-            r"%%=    block_end_string: '}'""\n"
-            '%%- if pagenumbering is defined\n'
-            "%%-     if 'on' in pagenumbering\n"
-            "%%-         set pagenum_on = pagenumbering['on']\n"
-            r"%%=    variable_start_string: '\VAR{'""\n"
-            r"%%=    variable_end_string: '}'""\n"
-            r"%%=    comment_start_string: '\#{'""\n"
-            r"%%=    comment_end_string: '}'""\n"
-            "%%-     endif\n"
-            "%%-     if 'position' in pagenumbering\n"
-            "%%-         set pagenum_position = pagenumbering['position']\n"
-            "%%-     endif\n"
-            "%%-     if 'align' in pagenumbering\n"
-            r"%%=    line_statement_prefix: '%%'""\n"
-            r"%%=    line_comment_prefix: '%#'""\n"
-            "%%-         set pagenum_align = pagenumbering['align']\n"
-            "%%-     endif\n"
-            "%%-     if 'firstpage' in pagenumbering\n"
-            "%%-         set pagenum_firstpage = pagenumbering['firstpage']\n"
-            "%%-     endif\n"
-            "%%- endif\n"
-            '\n'
-            "%!TEX encoding=utf8\n"
-            r"%!TEX options=-output-directory=\VAR{j_outdir}""\n"
-            "%!TEX options=-shell-escape\n"
-            "%!TEX program=xelatex\n"
-            r"%!TEX jobname=\VAR{jobname}""\n"
-            '\n'
-            r"\documentclass[""\n"
-            "    a4paper,\n"
-            r"%%=    trim_blocks: true""\n"
-            "    oneside,\n"
-            "    onecolumn,\n"
-            "    article,\n"
-            r"    \VAR{font_size}""\n"
-            "]{memoir}\n"
-            r"%%=    autoescape: false""\n"
-            )
-
-        self.jinja2_variables = {
-            'jinja2': {
-                'block_start_string': '\\BLOCK{',
-                'block_end_string': '}',
-                'variable_start_string': '\\VAR{',
-                'variable_end_string': '}',
-                'comment_start_string': '\\#{',
-                'comment_end_string': '}',
-                'line_statement_prefix': r'%%',
-                'line_comment_prefix': r'%#',
-                'trim_blocks': True,
-                'autoescape': False
-            }
-        }
-
-        self.jinja2_cleared = (
-            '%%- if pagenumbering is defined\n'
-            "%%-     if 'on' in pagenumbering\n"
-            "%%-         set pagenum_on = pagenumbering['on']\n"
-            "%%-     endif\n"
-            "%%-     if 'position' in pagenumbering\n"
-            "%%-         set pagenum_position = pagenumbering['position']\n"
-            "%%-     endif\n"
-            "%%-     if 'align' in pagenumbering\n"
-            "%%-         set pagenum_align = pagenumbering['align']\n"
-            "%%-     endif\n"
-            "%%-     if 'firstpage' in pagenumbering\n"
-            "%%-         set pagenum_firstpage = pagenumbering['firstpage']\n"
-            "%%-     endif\n"
-            "%%- endif\n"
-            '\n'
-            "%!TEX encoding=utf8\n"
-            r"%!TEX options=-output-directory=\VAR{j_outdir}""\n"
-            "%!TEX options=-shell-escape\n"
-            "%!TEX program=xelatex\n"
-            r"%!TEX jobname=\VAR{jobname}""\n"
-            '\n'
-            r"\documentclass[""\n"
-            "    a4paper,\n"
-            "    oneside,\n"
-            "    onecolumn,\n"
-            "    article,\n"
-            r"    \VAR{font_size}""\n"
-            "]{memoir}\n"
-            )
-
     def test_extract_variables_from_latex_template(self):
         """Test the extracting variables from latex template."""
-        # print(self.latex_template)
         variables, cleared = extract_variables(StringIO(self.latex_template))
         self.assertEqual(variables.items(),
                          self.latex_variables.items())
         self.assertEqual(cleared, self.latex_cleared)
-
-    def test_extract_variables_from_jinja2_template(self):
-        """Test extracting variables from jinja2 template."""
-        variables, cleared = extract_variables(StringIO(self.jinja2_template))
-        self.assertEqual(variables.items(),
-                         self.jinja2_variables.items())
-        self.assertEqual(cleared, self.jinja2_cleared)
 
 
 if __name__ == '__main__':
