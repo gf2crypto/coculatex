@@ -1,6 +1,7 @@
 """The module containing the function for loading themes."""
 import logging
-from os import path
+from os import (path,
+                listdir)
 from yaml import safe_load
 from yaml.scanner import ScannerError
 from coculatex import config
@@ -79,6 +80,48 @@ def load_theme(name):
                   theme, theme_config)
         theme_config.update(subtheme_config)
     return theme_config
+
+
+def themes_iter(name=None):
+    """Iterate over theme's.
+
+    :param: `str` name - name of the theme
+    :return: python iterator object over all registered themes,
+             or over all subthemes if the theme's name is specified.
+    """
+    if name:
+        LOG.debug('Init iterator over subtheme of the theme: %s', name)
+        theme_config = load_theme(name)
+        LOG.debug('Load the configuration of the theme %s: %s',
+                  name, theme_config)
+        if not theme_config:
+            return
+        try:
+            theme_list = [
+                '{root}{sep}{theme}'.format(root=name,
+                                            sep=config.THEME_NAME_SEP,
+                                            theme=theme)
+                for theme in theme_config.get(
+                    config.SECTION_NAMES_CONFIG['subthemes'], {}).keys()
+                ]
+        except (TypeError, AttributeError):
+            LOG.warning('Configuration theme `%s` error. '
+                        'Block `%s` has incorrect type: expected'
+                        ' `dict`, but got `%s`',
+                        name,
+                        config.SECTION_NAMES_CONFIG['subthemes'],
+                        type(theme_config.get(
+                            config.SECTION_NAMES_CONFIG['subthemes'])))
+            return
+    else:
+        LOG.debug('Init iterator over all registered themes')
+        theme_list = listdir(config.THEMES_PATH)
+
+    for theme in theme_list:
+        subtheme_config = load_theme(theme)
+        if not subtheme_config:
+            continue
+        yield theme, subtheme_config
 
 
 def __update_dict(old, new, sections):
