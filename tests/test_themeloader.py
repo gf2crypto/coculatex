@@ -135,7 +135,6 @@ class ThemeLoaderTestCase(unittest.TestCase):
         self.theme_alpha = safe_load(StringIO(self.theme_alpha_config))
         self.theme_alpha_a = safe_load(StringIO(self.theme_alpha_a_config))
         self.theme_alpha_a_1 = safe_load(StringIO(self.theme_alpha_a_1_config))
-        self.theme_alpha_a_1['description']
         self.make_diretory_tree()
 
     def make_diretory_tree(self):
