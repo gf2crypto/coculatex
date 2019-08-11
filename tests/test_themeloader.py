@@ -6,7 +6,8 @@ from os import (makedirs,
                 path)
 from yaml import safe_load
 import coculatex.config as config
-from coculatex.themeloader import load_theme
+from coculatex.themeloader import (load_theme,
+                                   themes_iter)
 
 
 class ThemeLoaderTestCase(unittest.TestCase):
@@ -249,14 +250,52 @@ class ThemeIteratorTestCase(unittest.TestCase):
             ),
         }
         self.themes = {}
+        config.THEMES_PATH = self.tempdir.name
+        self.make_files()
+
+    def tearDown(self):
+        """Clean after test."""
+        self.tempdir.cleanup()
 
     def make_files(self):
         """Make directory tree."""
         for (name, conf_str) in self.themes_config.items():
             self.themes[name] = safe_load(StringIO(conf_str))
-            makedirs(path.dirname(self.themes[name][path]), exist_ok=True)
-            with open(self.themes[name], 'w') as file:
+            makedirs(path.dirname(self.themes[name]['path']), exist_ok=True)
+            with open(self.themes[name]['path'], 'w') as file:
                 file.write('\n'.join(conf_str.split('\n')[1:]))
+
+    def test_iteration_all(self):
+        """Test iteration over all themes."""
+        check_themes = {name: load_theme(name)
+                        for name in ['a', 'b', 'c']}
+        themes = dict(themes_iter())
+        for name, theme_conf in check_themes.items():
+            self.assertIn(name, themes)
+            self.assertEqual(theme_conf.items(), themes[name].items())
+
+    def test_iteration_theme(self):
+        """Test iteration over subthemes."""
+        check_themes = {'a{sep}{name}'.format(sep=config.THEME_NAME_SEP,
+                                              name=name):
+                        load_theme('a{sep}{name}'.format(
+                            sep=config.THEME_NAME_SEP,
+                            name=name))
+                        for name in ['a1', 'a2', 'a3']}
+        themes = dict(themes_iter('a'))
+        for name, theme_conf in check_themes.items():
+            self.assertIn(name, themes)
+            self.assertEqual(theme_conf.items(), themes[name].items())
+
+    def test_iteration_not_theme(self):
+        """Test iteration over all themes if a theme does not exist."""
+        check_themes = {name: load_theme(name)
+                        for name in ['a', 'b', 'c']}
+        makedirs(path.join(self.tempdir.name, 'notheme'))
+        themes = dict(themes_iter())
+        for name, theme_conf in check_themes.items():
+            self.assertIn(name, themes)
+            self.assertEqual(theme_conf.items(), themes[name].items())
 
 
 if __name__ == '__main__':
