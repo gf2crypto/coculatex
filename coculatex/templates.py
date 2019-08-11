@@ -38,7 +38,7 @@ def extract_variables(file):
         `str` clear_template - file lines cleared of variables
     """
     LOG.debug("Extract variables from iterables")
-    prefix = config.YAML_LINE_PREFIX
+    prefix = config.LTCONFIG['config_prefix']
     LOG.debug("Prefix of line which is contains varibales: %s", prefix)
     len_prefix = len(prefix)
     var_strings = ''
