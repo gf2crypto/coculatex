@@ -12,7 +12,7 @@ WORKING_DIRECTORY = ''  # the default is the current folder
 THEMES_PATH = path.join(USER_CONFIG_PATH, 'themes')
 
 # The separator of the name parts
-THEME_NAME_SEP = ':'
+THEME_NAME_SEP = '.'
 
 # The name of the theme configuration file
 THEME_CONFIG_FILENAME = 'config.yaml'
