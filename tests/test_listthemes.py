@@ -140,7 +140,8 @@ class ListThemesTestCase(unittest.TestCase):
 
     def test_list_theme_not_detailed(self):
         """Test list all themes, not detailed."""
-        self.assertEqual('a:a1 a:a2 a:a3 ', handler('a'))
+        self.assertEqual('a{sep}a1 a{sep}a2 a{sep}a3 '.format(
+            sep=config.THEME_NAME_SEP), handler('a'))
 
     def test_list_theme_detailed(self):
         """Test list all themes, not detailed."""
@@ -157,10 +158,10 @@ class ListThemesTestCase(unittest.TestCase):
             if not subthemes:
                 subthemes = 'not provided'
             out_str += (
-                'a:{name}\n'
+                'a{sep}{name}\n'
                 '{desc}\n\n'
                 '{shift}Subthemes: {subthemes}\n'
-                ''.format(name=name, desc=desc,
+                ''.format(sep=config.THEME_NAME_SEP, name=name, desc=desc,
                           shift=SHIFT_SIZE * ' ', subthemes=subthemes)
                 )
         self.assertEqual(out_str, handler('a', detail=True))

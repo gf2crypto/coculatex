@@ -67,7 +67,7 @@ class ThemeLoaderTestCase(unittest.TestCase):
                 '{example}: examples/a\n'
                 ''.format(**config.SECTION_NAMES_CONFIG)
             ),
-            'alpha:a': (
+            'alpha{sep}a'.format(sep=config.THEME_NAME_SEP): (
                 'path: {path}\n'
                 '{subthemes}:\n'
                 '    a1: 1.yaml\n'
@@ -104,7 +104,7 @@ class ThemeLoaderTestCase(unittest.TestCase):
                 '{jinja2_config}: {{}}\n'
                 ''.format(**config.SECTION_NAMES_CONFIG)
             ),
-            'alpha:a:a1': (
+            'alpha{sep}a{sep}a1'.format(sep=config.THEME_NAME_SEP): (
                 'path: {path}\n'
                 '{subthemes}: {{}}\n'
                 '{parameters}:\n'
@@ -134,8 +134,12 @@ class ThemeLoaderTestCase(unittest.TestCase):
         }
         self.themes = {
             'alpha': safe_load(StringIO(self.themes_config['alpha'])),
-            'alpha:a': safe_load(StringIO(self.themes_config['alpha:a'])),
-            'alpha:a:a1': safe_load(StringIO(self.themes_config['alpha:a:a1']))
+            'alpha{sep}a'.format(sep=config.THEME_NAME_SEP):
+                safe_load(StringIO(self.themes_config[
+                    'alpha{sep}a'.format(sep=config.THEME_NAME_SEP)])),
+            'alpha{sep}a{sep}a1'.format(sep=config.THEME_NAME_SEP):
+                safe_load(StringIO(self.themes_config[
+                    'alpha{sep}a{sep}a1'.format(sep=config.THEME_NAME_SEP)]))
         }
         self.make_diretory_tree()
 
@@ -167,7 +171,8 @@ class ThemeLoaderTestCase(unittest.TestCase):
         """Test init the theme, embeded configuration."""
         handler('alpha', output_directory=self.out_dir.name, embed=True)
         out_path = path.join(self.out_dir.name,
-                             'alpha' + '.source.tex')
+                             'alpha' + '.{}'.format(
+                                 config.LTCONFIG['source_ext']))
         self.assertTrue(path.exists(out_path))
         params = {'theme': 'alpha', 'project-name': 'alpha'}
         params.update(self.themes['alpha'].get('parameters', {}))
@@ -201,7 +206,8 @@ class ThemeLoaderTestCase(unittest.TestCase):
         handler('alpha', project_name='my_project',
                 output_directory=self.out_dir.name, embed=True)
         out_path = path.join(self.out_dir.name,
-                             'my_project' + '.source.tex')
+                             'my_project' + '.{}'.format(
+                                 config.LTCONFIG['source_ext']))
         self.assertTrue(path.exists(out_path))
         params = {'theme': 'alpha', 'project-name': 'my_project'}
         params.update(self.themes['alpha'].get('parameters', {}))
@@ -219,26 +225,56 @@ class ThemeLoaderTestCase(unittest.TestCase):
 
     def test_init_project_subsubtheme(self):
         """Test init the subsubtheme, specify project-name, not embed."""
-        handler('alpha:a:a1', project_name='my_project',
+        handler('alpha{sep}a{sep}a1'.format(sep=config.THEME_NAME_SEP),
+                project_name='my_project',
                 output_directory=self.out_dir.name)
         out_path = path.join(self.out_dir.name,
                              'my_project' + '.yaml')
         self.assertTrue(path.exists(out_path))
-        params = {'theme': 'alpha:a:a1', 'project-name': 'my_project'}
-        params.update(self.themes['alpha:a:a1'].get('parameters', {}))
+        params = {'theme': 'alpha{sep}a{sep}a1'.format(sep=config.THEME_NAME_SEP),
+                  'project-name': 'my_project'}
+        params.update(
+            self.themes[
+                'alpha{sep}a{sep}a1'.format(
+                    sep=config.THEME_NAME_SEP)].get('parameters', {}))
+        params.update({'tex-preambule': '', 'tex-options': {}})
+        with open(out_path, 'r', encoding='utf-8') as file:
+            self.assertEqual(file.read(), safe_dump(params, sort_keys=False))
+
+    def test_init_subsubtheme(self):
+        """Test init the subsubtheme, not embed."""
+        handler('alpha{sep}a{sep}a1'.format(sep=config.THEME_NAME_SEP),
+                output_directory=self.out_dir.name)
+        out_path = path.join(self.out_dir.name,
+                             'alpha{sep}a{sep}a1'.format(
+                                 sep=config.THEME_NAME_SEP) + '.yaml')
+        self.assertTrue(path.exists(out_path))
+        params = {'theme': 'alpha{sep}a{sep}a1'.format(
+            sep=config.THEME_NAME_SEP),
+                  'project-name': 'alpha{sep}a{sep}a1'.format(
+                      sep=config.THEME_NAME_SEP)}
+        params.update(
+            self.themes[
+                'alpha{sep}a{sep}a1'.format(
+                    sep=config.THEME_NAME_SEP)].get('parameters', {}))
         params.update({'tex-preambule': '', 'tex-options': {}})
         with open(out_path, 'r', encoding='utf-8') as file:
             self.assertEqual(file.read(), safe_dump(params, sort_keys=False))
 
     def test_init_project_embed_subtheme(self):
-        """Test init the subtheme."""
-        handler('alpha:a', project_name='my_project',
+        """Test init the subtheme, specify project, embed config."""
+        handler('alpha{sep}a'.format(sep=config.THEME_NAME_SEP),
+                project_name='my_project',
                 output_directory=self.out_dir.name, embed=True)
         out_path = path.join(self.out_dir.name,
-                             'my_project' + '.source.tex')
+                             'my_project' + '.{}'.format(
+                                 config.LTCONFIG['source_ext']))
         self.assertTrue(path.exists(out_path))
-        params = {'theme': 'alpha:a', 'project-name': 'my_project'}
-        params.update(self.themes['alpha:a'].get('parameters', {}))
+        params = {'theme': 'alpha{sep}a'.format(sep=config.THEME_NAME_SEP),
+                  'project-name': 'my_project'}
+        params.update(self.themes[
+            'alpha{sep}a'.format(sep=config.THEME_NAME_SEP)].get('parameters',
+                                                                 {}))
         params.update({'tex-preambule': '', 'tex-options': {}})
         content = ''
         for line in safe_dump(params, sort_keys=False).split('\n'):
