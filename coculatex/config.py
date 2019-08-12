@@ -34,8 +34,9 @@ J2CONFIG = {
 
 # The LaTeX template config
 LTCONFIG = {
-    'config_prefix': r'%%='  # prefix for the line
-                             # contained the template variables
+    'config_prefix': r'%%=',  # prefix for the line
+                              # contained the template variables
+    'source_ext': 'source.tex'  # extension of the source tex file
 }
 
 # The names of the configuration file's sections

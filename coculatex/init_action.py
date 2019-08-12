@@ -66,8 +66,9 @@ def handler(theme,
                        sort_keys=False,
                        allow_unicode=True)
     if embed:
-        output_file = path.join(output_directory,
-                                project_name + '.source.tex')
+        output_file = path.join(
+            output_directory,
+            project_name + '.{}'.format(LTCONFIG['source_ext']))
         content = ''
         for line in config_dump.split('\n'):
             if line:
