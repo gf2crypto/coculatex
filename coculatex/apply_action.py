@@ -86,48 +86,23 @@ def handler(config_file=None, embed=False):
         return 1
 
     LOG.debug('Use the follow configuration file: %s', config_file)
-    try:
-        with open(config_file, 'r', encoding='utf-8') as file:
-            if embed:
-                LOG.debug('Configurations is not embed')
-                params = safe_load(file)
-            else:
-                LOG.debug('Configurations is embed')
-                params, _ = extract_variables(file)
-    except (FileNotFoundError, IOError, OSError) as error:
-        LOG.error('Cannot read the path %s: %s', config_file, error)
-        return 1
-    except ScannerError as error:
-        LOG.error('The problem happens while parse config file '
-                  '%s: %s', config_file, error)
-        return 1
+    params = __load_params(config_file, embed)
     if not params:
-        LOG.error('Cannot load configurations from the path %s', config_file)
-
-    # LOG.debug('The output directory: %s', working_dir)
-    if 'theme' not in params:
-        LOG.error('Cannot apply theme because the name of '
-                  'it is not specified in configuration, '
-                  'check the directive `theme` in your configuration: %s',
-                  params)
-        return 1
-    if 'project-name' not in params:
-        LOG.error('Cannot apply theme, because the project name '
-                  'is not specified, check the directive `project-name` '
-                  'in your configuration: %s', params)
-        return 1
-    tex_sources = params.get('tex-sources', [])
-    if embed:
-        LOG.debug('Add the configurations file %s to the tex sources',
-                  config_file)
-        tex_sources += [config_file]
-    if not tex_sources:
-        LOG.error('Cannot apply theme, because no one tex source file'
-                  'is not specified, check the directive `tex-sources` '
-                  'in your configuration: %s', params)
         return 1
     theme = load_theme(str(params['theme']))
     LOG.debug('Loaded theme %s, config: %s', params['theme'], theme)
+    working_dir = path.dirname(params['path'])
+    out_file = '{project_name}.{ext}'.format(
+        project_name=params['project-name'],
+        ext=LTCONFIG['tex_ext'])
+    __write_tex_options(path.join(working_dir, out_file),
+                        theme['tex'],
+                        params['tex-options'])
+    __write_template(root_path=path.join(
+        path.dirname(theme['path']),
+        theme[SECTION_NAMES_CONFIG['root_file']]),
+                     jinja2config=theme[SECTION_NAMES_CONFIG['jinja2_config']])
+
     # if not source_file:
     #     source_file = project_name + '.source.tex'
     # LOG.debug('The source file name: %s', source_file)
@@ -153,3 +128,102 @@ def handler(config_file=None, embed=False):
     # LOG.debug('Copy additional theme files %s', include_files)
     # __copy_included_files(theme_path, working_dir, include_files)
     return 0
+
+
+def __load_params(config_file, embed):
+    """Load parameters from configuration file.
+
+    :param: `str` config_file - the path to the config file
+    :param: `bool` embed - if it is setted to the True the configuration
+                           file is a tex file with the embeded config.
+    """
+    try:
+        with open(config_file, 'r', encoding='utf-8') as file:
+            if embed:
+                LOG.debug('Configurations is not embed')
+                params = safe_load(file)
+            else:
+                LOG.debug('Configurations is embed')
+                params, _ = extract_variables(file)
+    except (FileNotFoundError, IOError, OSError) as error:
+        LOG.error('Cannot read the path %s: %s', config_file, error)
+        return None
+    except ScannerError as error:
+        LOG.error('The problem happens while parse config file '
+                  '%s: %s', config_file, error)
+        return None
+    if not params:
+        LOG.error('Cannot load configurations from the path %s', config_file)
+
+    # LOG.debug('The output directory: %s', working_dir)
+    if 'theme' not in params:
+        LOG.error('Cannot apply theme because the name of '
+                  'it is not specified in configuration, '
+                  'check the directive `theme` in your configuration: %s',
+                  params)
+        return None
+    if 'project-name' not in params:
+        LOG.error('Cannot apply theme, because the project name '
+                  'is not specified, check the directive `project-name` '
+                  'in your configuration: %s', params)
+        return None
+    return params
+
+
+def __write_tex_options(out_path,
+                        theme_tex_options,
+                        tex_options):
+    """Write the tex options to the file."""
+    with open(out_path, 'a', encoding='utf-8') as file:
+        for name, value in theme_tex_options.items():
+            if isinstance(value, list):
+                try:
+                    file.write(
+                        '%!TEX {}={}\n'.format(
+                            name,
+                            ' '.join(
+                                [str(el)
+                                 for el in set(value + tex_options.get(name,
+                                                                       []))])
+                            ))
+                except (TypeError, ValueError, AttributeError) as error:
+                    LOG.debug('Magic comment `%s` is not list, pass it: %s',
+                              name,
+                              error)
+            else:
+                file.write('%!TEX {}={}\n'.format(name, value))
+
+
+def __write_template(root_path, jinja2config=None):
+    """
+    Make jinja2 template and interpolate it by using variables.
+
+    Return `str` data from jinja2 template rendered by variables.
+    """
+    jinja2_variables = dict(config.config_iter(config.JINJA2_DEFAULT_CONFIG))
+    LOG.debug('default jinja2 configuration: %s', jinja2_variables)
+    # delete unknown keys and update values of default configuration
+    if jinja2_variables_str:
+        jinja2_variables_from_template = yaml.safe_load(jinja2_variables_str)
+        if not jinja2_variables_from_template:
+            jinja2_variables_from_template = {}
+        LOG.debug('loaded variables from `%s`: %s',
+                  root_path,
+                  jinja2_variables_from_template)
+        jinja2_variables.update(
+            {key: value
+             for key, value in jinja2_variables_from_template.items()
+             if key in jinja2_variables})
+        LOG.debug('jinj2 configuration updated by loaded variables: %s',
+                  jinja2_variables)
+    LOG.debug('using variables for render template: %s', variables)
+    try:
+        data = jinja2.Environment(
+            loader=templates.TemplateLoader(os.path.dirname(root_path)),
+            **jinja2_variables).from_string(content).render(**variables)
+    except (jinja2.exceptions.TemplateError,
+            jinja2.exceptions.TemplateRuntimeError,
+            jinja2.exceptions.TemplateSyntaxError) as error:
+        raise exceptions.LaTeXTMError(
+            'jinja2 theme template error: {}'.format(error))
+    return data
