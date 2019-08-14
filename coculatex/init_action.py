@@ -4,7 +4,10 @@ from os import (getcwd,
                 path,
                 makedirs)
 from yaml import dump
-from coculatex.config import LTCONFIG
+from coculatex.config import (LTCONFIG,
+                              PARAMETERS_BEGIN,
+                              PARAMETERS_END,
+                              THEME_PARAMETERS_CONFIG)
 from coculatex.themeloader import load_theme
 
 LOG = logging.getLogger(__name__)
@@ -58,10 +61,15 @@ def handler(theme,
     theme_config = load_theme(theme)
     LOG.debug('The theme `%s` from is loaded: %s',
               theme, theme_config)
-    theme_parameters = {'theme': theme, 'project-name': project_name}
+    if PARAMETERS_BEGIN:
+        theme_parameters = {item: THEME_PARAMETERS_CONFIG[item]
+                            for item in PARAMETERS_BEGIN}
+    else:
+        theme_parameters = {}
     theme_parameters.update(theme_config.get('parameters', {}))
-    theme_parameters.update({'tex-preambule': '',
-                             'tex-options': {}})
+    if PARAMETERS_END:
+        theme_parameters.update({item: THEME_PARAMETERS_CONFIG[item]
+                                 for item in PARAMETERS_END})
     config_dump = dump(theme_parameters,
                        sort_keys=False,
                        allow_unicode=True)
