@@ -69,24 +69,24 @@ SECTION_NAMES_CONFIG = {
 # Additiona theme variables which is specified in user configuration
 PARAMETERS_NAMES_CONFIG = {
     'theme': 'theme',  # the theme's name block
-    'project-name': 'project-name',  # the project name's block
-    'tex-preambule': 'tex-preambule',  # the block containing the tex preambule
-    'tex-options': 'tex-options',       # the block containing
+    'project_name': 'project-name',  # the project name's block
+    'tex_preambule': 'tex-preambule',  # the block containing the tex preambule
+    'tex_options': 'tex-options',       # the block containing
                                         # the tex additional options
-    'tex-sources': 'tex-sources'  # the list of sources file block
+    'tex_sources': 'tex_sources'  # the list of sources file block
 }
 
 # This parameters will add in the begin of the configuration
 PARAMETERS_BEGIN = [
     PARAMETERS_NAMES_CONFIG['theme'],
-    PARAMETERS_NAMES_CONFIG['project-name']
+    PARAMETERS_NAMES_CONFIG['project_name']
 ]
 
 # This parameters will add in the end of the configuration
 PARAMETERS_END = [
-    PARAMETERS_NAMES_CONFIG['tex-preambule'],
-    PARAMETERS_NAMES_CONFIG['tex-options'],
-    PARAMETERS_NAMES_CONFIG['tex-sources']
+    PARAMETERS_NAMES_CONFIG['tex_preambule'],
+    PARAMETERS_NAMES_CONFIG['tex_options'],
+    PARAMETERS_NAMES_CONFIG['tex_sources']
 ]
 
 # The theme's configuration
@@ -107,10 +107,10 @@ THEME_CONFIG = {
 # The theme's parameters section configuration
 THEME_PARAMETERS_CONFIG = {
     PARAMETERS_NAMES_CONFIG['theme']: '',
-    PARAMETERS_NAMES_CONFIG['project-name']: '',
-    PARAMETERS_NAMES_CONFIG['tex-preambule']: '',
-    PARAMETERS_NAMES_CONFIG['tex-options']: {},
-    PARAMETERS_NAMES_CONFIG['tex-sources']: []
+    PARAMETERS_NAMES_CONFIG['project_name']: '',
+    PARAMETERS_NAMES_CONFIG['tex_preambule']: '',
+    PARAMETERS_NAMES_CONFIG['tex_options']: {},
+    PARAMETERS_NAMES_CONFIG['tex_sources']: []
 }
 
 # The list of the registered themes
