@@ -1,13 +1,20 @@
 """The module containing the function to action of the `apply` command."""
 import logging
-from os import (getcwd,
-                path,
-                makedirs,
+from os import (path,
+                getcwd,
                 listdir)
-from yaml import safe_dump, safe_load
+from shutil import (copy2,
+                    copytree)
+from yaml import safe_load
 from yaml.scanner import ScannerError
+from jinja2 import (FileSystemLoader,
+                    Environment,
+                    exceptions)
 from coculatex.config import (LTCONFIG,
-                              SECTION_NAMES_CONFIG)
+                              J2CONFIG,
+                              SECTION_NAMES_CONFIG,
+                              PARAMETERS_NAMES_CONFIG,
+                              THEME_PARAMETERS_CONFIG)
 from coculatex.templates import extract_variables
 from coculatex.themeloader import load_theme
 
@@ -89,44 +96,37 @@ def handler(config_file=None, embed=False):
     params = __load_params(config_file, embed)
     if not params:
         return 1
-    theme = load_theme(str(params['theme']))
-    LOG.debug('Loaded theme %s, config: %s', params['theme'], theme)
-    working_dir = path.dirname(params['path'])
+    theme = load_theme(str(params[PARAMETERS_NAMES_CONFIG['theme']]))
+    LOG.debug('Loaded theme %s, config: %s',
+              params.pop(PARAMETERS_NAMES_CONFIG['theme']),
+              theme)
+    working_dir = path.dirname(config_file)
     out_file = '{project_name}.{ext}'.format(
-        project_name=params['project-name'],
+        project_name=params.pop(PARAMETERS_NAMES_CONFIG['project-name']),
         ext=LTCONFIG['tex_ext'])
     __write_tex_options(path.join(working_dir, out_file),
-                        theme['tex'],
-                        params['tex-options'])
-    __write_template(root_path=path.join(
+                        theme[SECTION_NAMES_CONFIG['tex']],
+                        params.pop(PARAMETERS_NAMES_CONFIG['tex-options']))
+    tex_sources = params.pop(SECTION_NAMES_CONFIG['tex-sources'])
+    LOG.debug('List of the `TeX` sources files: %s', tex_sources)
+    result = __write_template(root_path=path.join(
         path.dirname(theme['path']),
         theme[SECTION_NAMES_CONFIG['root_file']]),
-                     jinja2config=theme[SECTION_NAMES_CONFIG['jinja2_config']])
-
-    # if not source_file:
-    #     source_file = project_name + '.source.tex'
-    # LOG.debug('The source file name: %s', source_file)
-    # source_file_path = os.path.join(working_dir, source_file)
-    # LOG.debug('The source file path: %s', source_file_path)
-    # theme_values, theme_path = __load_theme(theme_name, args.themes_path)
-    # LOG.debug('The theme `%s` from the path `%s` is loaded, values:\n%s',
-    #           theme_name, theme_path, theme_values)
-    # theme_values.update({'theme_path': theme_path})
-    # output_path = os.path.join(working_dir, project_name + '.tex')
-    # if os.path.isfile(output_path) and not args.config_file:
-    #     LOG.error('Cannot write the output file because '
-    #               'the path `%s` exists. It seems that you need '
-    #               'change the project name: %s.',
-    #               output_path, project_name)
-    #     exit(1)
-    # __write_output_files(output_path,
-    #                      project_name,
-    #                      source_file_path,
-    #                      theme_values,
-    #                      values)
-    # include_files = theme_values.pop('include_files', {})
-    # LOG.debug('Copy additional theme files %s', include_files)
-    # __copy_included_files(theme_path, working_dir, include_files)
+                              out_path=path.join(working_dir, out_file),
+                              values=params,
+                              tex_sources=tex_sources,
+                              jinja2config=theme[
+                                  SECTION_NAMES_CONFIG['jinja2_config']])
+    if result:
+        return result
+    __write_latex_magic(out_file,
+                        working_dir,
+                        tex_sources)
+    LOG.debug('Copy additional theme files %s',
+              theme.get(SECTION_NAMES_CONFIG['include_files'], []))
+    __copy_included_files(path.dirname(theme['path']),
+                          working_dir,
+                          theme.get(SECTION_NAMES_CONFIG['include_files'], []))
     return 0
 
 
@@ -137,11 +137,12 @@ def __load_params(config_file, embed):
     :param: `bool` embed - if it is setted to the True the configuration
                            file is a tex file with the embeded config.
     """
+    params = dict(THEME_PARAMETERS_CONFIG)
     try:
         with open(config_file, 'r', encoding='utf-8') as file:
             if embed:
                 LOG.debug('Configurations is not embed')
-                params = safe_load(file)
+                params.update(safe_load(file))
             else:
                 LOG.debug('Configurations is embed')
                 params, _ = extract_variables(file)
@@ -152,20 +153,28 @@ def __load_params(config_file, embed):
         LOG.error('The problem happens while parse config file '
                   '%s: %s', config_file, error)
         return None
-    if not params:
-        LOG.error('Cannot load configurations from the path %s', config_file)
 
     # LOG.debug('The output directory: %s', working_dir)
-    if 'theme' not in params:
+    if not params.get(PARAMETERS_NAMES_CONFIG['theme']):
         LOG.error('Cannot apply theme because the name of '
                   'it is not specified in configuration, '
-                  'check the directive `theme` in your configuration: %s',
+                  'check the directive `%s` in your configuration: %s',
+                  PARAMETERS_NAMES_CONFIG['theme'],
                   params)
         return None
-    if 'project-name' not in params:
+    if not params.get(PARAMETERS_NAMES_CONFIG['project-name']):
         LOG.error('Cannot apply theme, because the project name '
-                  'is not specified, check the directive `project-name` '
-                  'in your configuration: %s', params)
+                  'is not specified, check the directive `%s` '
+                  'in your configuration: %s',
+                  PARAMETERS_NAMES_CONFIG['project-name'],
+                  params)
+        return None
+    if not params.get(PARAMETERS_NAMES_CONFIG['tex-sources']):
+        LOG.error('Cannot apply theme, because no one source file '
+                  'is not specified, check the directive `%s` '
+                  'in your configuration: %s',
+                  PARAMETERS_NAMES_CONFIG['tex-sources'],
+                  params)
         return None
     return params
 
@@ -194,36 +203,117 @@ def __write_tex_options(out_path,
                 file.write('%!TEX {}={}\n'.format(name, value))
 
 
-def __write_template(root_path, jinja2config=None):
+def __write_template(root_path,
+                     out_path,
+                     values=None,
+                     tex_sources=None,
+                     jinja2config=None):
     """
     Make jinja2 template and interpolate it by using variables.
 
     Return `str` data from jinja2 template rendered by variables.
     """
-    jinja2_variables = dict(config.config_iter(config.JINJA2_DEFAULT_CONFIG))
-    LOG.debug('default jinja2 configuration: %s', jinja2_variables)
-    # delete unknown keys and update values of default configuration
-    if jinja2_variables_str:
-        jinja2_variables_from_template = yaml.safe_load(jinja2_variables_str)
-        if not jinja2_variables_from_template:
-            jinja2_variables_from_template = {}
-        LOG.debug('loaded variables from `%s`: %s',
-                  root_path,
-                  jinja2_variables_from_template)
-        jinja2_variables.update(
-            {key: value
-             for key, value in jinja2_variables_from_template.items()
-             if key in jinja2_variables})
-        LOG.debug('jinj2 configuration updated by loaded variables: %s',
-                  jinja2_variables)
-    LOG.debug('using variables for render template: %s', variables)
+    if jinja2config:
+        LOG.debug('User jinja2 configuration: %s', jinja2config)
+        J2CONFIG.update({item: jinja2config.get(item, value)}
+                        for item, value in J2CONFIG.items())
+    LOG.debug('Use the follow jinja2 configuration: %s', J2CONFIG)
+    if not values:
+        values = {}
+    if not tex_sources:
+        tex_sources = []
+    LOG.debug('List of the `TeX` sources files: %s', tex_sources)
+    tex_main_format = r'\include{' + '{source}' + r'}\n'
+    tex_main_str = ''
+    if isinstance(tex_sources, str):
+        tex_main_str = tex_main_format.format(
+            source=path.normpath(tex_sources))
+    else:
+        try:
+            for source in tex_sources:
+                tex_main_str += tex_main_format.format(
+                    source=path.normpath(source))
+        except TypeError:
+            LOG.debug('tex_sources has wrong format, it is not list, but `%s`',
+                      type(tex_sources))
+    LOG.debug('`tex_main` string: %s', tex_main_str)
+    values['tex_main'] = tex_main_str
     try:
-        data = jinja2.Environment(
-            loader=templates.TemplateLoader(os.path.dirname(root_path)),
-            **jinja2_variables).from_string(content).render(**variables)
-    except (jinja2.exceptions.TemplateError,
-            jinja2.exceptions.TemplateRuntimeError,
-            jinja2.exceptions.TemplateSyntaxError) as error:
-        raise exceptions.LaTeXTMError(
-            'jinja2 theme template error: {}'.format(error))
-    return data
+        data = Environment(
+            loader=FileSystemLoader(path.dirname(root_path),
+                                    followlinks=True),
+            **J2CONFIG).get_template(
+                path.basename(root_path)).render(**values)
+    except (exceptions.TemplateError,
+            exceptions.TemplateRuntimeError,
+            exceptions.TemplateSyntaxError) as error:
+        LOG.error('Error while template interpolation: %s', error)
+        return 1
+    except (FileNotFoundError, IOError, PermissionError) as error:
+        LOG.error('Error while reading the file %s: %s',
+                  root_path,
+                  error)
+        return 1
+    LOG.debug('Result of the interpolation:\n%s', data)
+    with open(out_path, 'a', encoding='utf-8') as file:
+        file.write(data)
+    return 0
+
+
+def __write_latex_magic(filename, working_dir, tex_sources):
+    """Write the `LaTeX` magic comments."""
+    latex_root_magic = '%!TEX root={}.tex\n'.format(filename)
+    if not tex_sources:
+        LOG.debug('The list of the sources file is empty: %s', tex_sources)
+        return
+    for source in tex_sources:
+        source = path.join(working_dir, path.normpath(source))
+        try:
+            with open(source, 'r', encoding='utf8') as file:
+                lines = file.readlines()
+        except FileNotFoundError:
+            try:
+                with open(source, 'w', encoding='utf8') as file:
+                    file.write(latex_root_magic)
+            except (OSError, PermissionError) as error:
+                LOG.debug('Cannot add latex magic root to the file %s: %s',
+                          source, error)
+        except (OSError, PermissionError) as error:
+            LOG.debug('Cannot add latex magic root to the file %s: %s',
+                      source, error)
+        else:
+            try:
+                with open(source, 'w', encoding='utf8') as file:
+                    file.write(latex_root_magic)
+                    file.writelines([line for line in lines
+                                     if not line.startswith('%!TEX root=')])
+            except (OSError, PermissionError) as error:
+                LOG.debug('Cannot add latex magic root to the file %s: %s',
+                          source, error)
+
+
+def __copy_included_files(theme_path,
+                          working_dir,
+                          include_files):
+    """Copy the included files to a project."""
+    try:
+        for dst, src in include_files.items():
+            try:
+                try:
+                    copytree(
+                        path.join(theme_path, src),
+                        path.join(working_dir, dst))
+                except NotADirectoryError:
+                    copy2(
+                        path.join(theme_path, src),
+                        path.join(working_dir, dst))
+            except (FileNotFoundError, IOError, PermissionError) as error:
+                LOG.debug('Cannot copy path `%s` to `%s` because: %s',
+                          path.join(theme_path, src),
+                          path.join(working_dir, dst),
+                          error)
+    except AttributeError:
+        LOG.debug('Directive the `%s` has wrong format: %s. '
+                  'Therefore additional files was not copied.',
+                  SECTION_NAMES_CONFIG['include_files'],
+                  include_files)
