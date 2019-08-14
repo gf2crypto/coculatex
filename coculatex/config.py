@@ -83,7 +83,7 @@ PARAMETERS_BEGIN = [
 ]
 
 # This parameters will add in the end of the configuration
-PARAMETERS_BEGIN = [
+PARAMETERS_END = [
     PARAMETERS_NAMES_CONFIG['tex-preambule'],
     PARAMETERS_NAMES_CONFIG['tex-options'],
     PARAMETERS_NAMES_CONFIG['tex-sources']
