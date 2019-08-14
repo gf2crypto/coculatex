@@ -102,16 +102,27 @@ def handler(config_file=None, embed=False):
               theme)
     working_dir = path.dirname(config_file)
     out_file = '{project_name}.{ext}'.format(
-        project_name=params.pop(PARAMETERS_NAMES_CONFIG['project-name']),
+        project_name=params.pop(PARAMETERS_NAMES_CONFIG['project_name']),
         ext=LTCONFIG['tex_ext'])
-    __write_tex_options(path.join(working_dir, out_file),
-                        theme[SECTION_NAMES_CONFIG['tex']],
-                        params.pop(PARAMETERS_NAMES_CONFIG['tex-options']))
-    tex_sources = params.pop(SECTION_NAMES_CONFIG['tex-sources'])
+    tex_options = theme[SECTION_NAMES_CONFIG['tex']]
+    tex_options.update(params.pop(PARAMETERS_NAMES_CONFIG['tex_options']))
+    __write_tex_options(path.join(working_dir, out_file), tex_options)
+    tex_sources = params.pop(PARAMETERS_NAMES_CONFIG['tex_sources'], [])
+    if isinstance(tex_sources, str):
+        tex_sources = [tex_sources]
+    if embed:
+        tex_sources += [path.basename(config_file)]
+    if not tex_sources:
+        LOG.error('Cannot apply theme, because no one source file '
+                  'is not specified, check the directive `%s` '
+                  'in your configuration: %s',
+                  PARAMETERS_NAMES_CONFIG['tex_sources'],
+                  params)
+        return 1
     LOG.debug('List of the `TeX` sources files: %s', tex_sources)
     result = __write_template(root_path=path.join(
         path.dirname(theme['path']),
-        theme[SECTION_NAMES_CONFIG['root_file']]),
+        path.normpath(theme[SECTION_NAMES_CONFIG['root_file']])),
                               out_path=path.join(working_dir, out_file),
                               values=params,
                               tex_sources=tex_sources,
@@ -141,11 +152,11 @@ def __load_params(config_file, embed):
     try:
         with open(config_file, 'r', encoding='utf-8') as file:
             if embed:
-                LOG.debug('Configurations is not embed')
-                params.update(safe_load(file))
-            else:
                 LOG.debug('Configurations is embed')
-                params, _ = extract_variables(file)
+                user_params, _ = extract_variables(file)
+            else:
+                LOG.debug('Configurations is not embed')
+                user_params = safe_load(file)
     except (FileNotFoundError, IOError, OSError) as error:
         LOG.error('Cannot read the path %s: %s', config_file, error)
         return None
@@ -153,6 +164,14 @@ def __load_params(config_file, embed):
         LOG.error('The problem happens while parse config file '
                   '%s: %s', config_file, error)
         return None
+    if user_params:
+        for name, value in params.items():
+            if name in user_params and not isinstance(user_params[name],
+                                                      type(value)):
+                LOG.debug('Expected `%s` is `%s`, but got `%s`',
+                          name, type(value), type(user_params[name]))
+                user_params.pop(name)
+        params.update(user_params)
 
     # LOG.debug('The output directory: %s', working_dir)
     if not params.get(PARAMETERS_NAMES_CONFIG['theme']):
@@ -162,38 +181,27 @@ def __load_params(config_file, embed):
                   PARAMETERS_NAMES_CONFIG['theme'],
                   params)
         return None
-    if not params.get(PARAMETERS_NAMES_CONFIG['project-name']):
+    if not params.get(PARAMETERS_NAMES_CONFIG['project_name']):
         LOG.error('Cannot apply theme, because the project name '
                   'is not specified, check the directive `%s` '
                   'in your configuration: %s',
-                  PARAMETERS_NAMES_CONFIG['project-name'],
-                  params)
-        return None
-    if not params.get(PARAMETERS_NAMES_CONFIG['tex-sources']):
-        LOG.error('Cannot apply theme, because no one source file '
-                  'is not specified, check the directive `%s` '
-                  'in your configuration: %s',
-                  PARAMETERS_NAMES_CONFIG['tex-sources'],
+                  PARAMETERS_NAMES_CONFIG['project_name'],
                   params)
         return None
     return params
 
 
 def __write_tex_options(out_path,
-                        theme_tex_options,
                         tex_options):
     """Write the tex options to the file."""
     with open(out_path, 'a', encoding='utf-8') as file:
-        for name, value in theme_tex_options.items():
+        for name, value in tex_options.items():
             if isinstance(value, list):
                 try:
                     file.write(
                         '%!TEX {}={}\n'.format(
                             name,
-                            ' '.join(
-                                [str(el)
-                                 for el in set(value + tex_options.get(name,
-                                                                       []))])
+                            ' '.join(value)
                             ))
                 except (TypeError, ValueError, AttributeError) as error:
                     LOG.debug('Magic comment `%s` is not list, pass it: %s',
@@ -223,19 +231,17 @@ def __write_template(root_path,
     if not tex_sources:
         tex_sources = []
     LOG.debug('List of the `TeX` sources files: %s', tex_sources)
-    tex_main_format = r'\include{' + '{source}' + r'}\n'
+    tex_main_format = '\\include{{{source}}}\n'
     tex_main_str = ''
-    if isinstance(tex_sources, str):
-        tex_main_str = tex_main_format.format(
-            source=path.normpath(tex_sources))
-    else:
-        try:
-            for source in tex_sources:
-                tex_main_str += tex_main_format.format(
-                    source=path.normpath(source))
-        except TypeError:
-            LOG.debug('tex_sources has wrong format, it is not list, but `%s`',
-                      type(tex_sources))
+    try:
+        for source in tex_sources:
+            if not source.endswith('.tex'):
+                source += '.tex'
+            tex_main_str += tex_main_format.format(
+                source=path.normpath(source))
+    except TypeError:
+        LOG.debug('tex_sources has wrong format, it is not list, but `%s`',
+                  type(tex_sources))
     LOG.debug('`tex_main` string: %s', tex_main_str)
     values['tex_main'] = tex_main_str
     try:
@@ -244,12 +250,10 @@ def __write_template(root_path,
                                     followlinks=True),
             **J2CONFIG).get_template(
                 path.basename(root_path)).render(**values)
-    except (exceptions.TemplateError,
-            exceptions.TemplateRuntimeError,
-            exceptions.TemplateSyntaxError) as error:
+    except exceptions.TemplateSyntaxError as error:
         LOG.error('Error while template interpolation: %s', error)
         return 1
-    except (FileNotFoundError, IOError, PermissionError) as error:
+    except (exceptions.TemplateNotFound) as error:
         LOG.error('Error while reading the file %s: %s',
                   root_path,
                   error)
@@ -262,11 +266,16 @@ def __write_template(root_path,
 
 def __write_latex_magic(filename, working_dir, tex_sources):
     """Write the `LaTeX` magic comments."""
-    latex_root_magic = '%!TEX root={}.tex\n'.format(filename)
+    if filename.endswith('.tex'):
+        latex_root_magic = '%!TEX root={}\n'.format(filename)
+    else:
+        latex_root_magic = '%!TEX root={}.tex\n'.format(filename)
     if not tex_sources:
         LOG.debug('The list of the sources file is empty: %s', tex_sources)
         return
     for source in tex_sources:
+        if not source.endswith('.tex'):
+            source += '.tex'
         source = path.join(working_dir, path.normpath(source))
         try:
             with open(source, 'r', encoding='utf8') as file:
