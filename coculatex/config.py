@@ -51,7 +51,10 @@ SECTION_NAMES_CONFIG = {
                                    # containing the theme's description
     'root_file': 'root_file',  # the name of the block contained
                                # the root file name
-    'tex': 'tex',  # the name of block containing the TeX compiling options
+    'tex_options': 'tex_options',       # the block containing
+                                        # the tex additional options
+    'tex_program': 'tex_program',       # the block containing
+                                        # the tex additional options
     'include_files': 'include_files',  # the name of the block containing
                                        # the dictionary of the additional files
                                        # which would be copied to
@@ -71,8 +74,6 @@ PARAMETERS_NAMES_CONFIG = {
     'theme': 'theme',  # the theme's name block
     'project_name': 'project_name',  # the project name's block
     'tex_preambule': 'tex_preambule',  # the block containing the tex preambule
-    'tex_options': 'tex_options',       # the block containing
-                                        # the tex additional options
     'tex_sources': 'tex_sources'  # the list of sources file block
 }
 
@@ -85,32 +86,38 @@ PARAMETERS_BEGIN = [
 # This parameters will add in the end of the configuration
 PARAMETERS_END = [
     PARAMETERS_NAMES_CONFIG['tex_preambule'],
-    PARAMETERS_NAMES_CONFIG['tex_options'],
+    SECTION_NAMES_CONFIG['tex_options'],
+    SECTION_NAMES_CONFIG['tex_program'],
     PARAMETERS_NAMES_CONFIG['tex_sources']
 ]
 
 # The theme's configuration
 
 THEME_CONFIG = {
-    'path': '',  # the path to the theme
-    SECTION_NAMES_CONFIG['subthemes']: {},  # the subthemes
-    SECTION_NAMES_CONFIG['parameters']: {},  # the template's parameters
-    SECTION_NAMES_CONFIG['description']: '',  # the description of the theme
-    SECTION_NAMES_CONFIG['root_file']: '',  # the root file name
-    SECTION_NAMES_CONFIG['tex']: {},  # the compiling TeX options
-    SECTION_NAMES_CONFIG['include_files']: {},  # the theme's addition files
-    SECTION_NAMES_CONFIG['readme']: '',  # the readme file name
-    SECTION_NAMES_CONFIG['example']: '',  # the relative path to the example
-    SECTION_NAMES_CONFIG['jinja2_config']: {}  # the jinja2's configuration
+    'path': str,  # the path to the theme
+    SECTION_NAMES_CONFIG['subthemes']: dict,  # the subthemes
+    SECTION_NAMES_CONFIG['parameters']: dict,  # the template's parameters
+    SECTION_NAMES_CONFIG['description']: str,  # the description of the theme
+    SECTION_NAMES_CONFIG['root_file']: str,  # the root file name
+    # the compiling TeX options
+    SECTION_NAMES_CONFIG['tex_options']: (list, str),
+    SECTION_NAMES_CONFIG['tex_program']: str,  # the compiling TeX options
+    SECTION_NAMES_CONFIG['include_files']: dict,  # the theme's addition files
+    SECTION_NAMES_CONFIG['readme']: str,  # the readme file name
+    SECTION_NAMES_CONFIG['example']: str,  # the relative path to the example
+    SECTION_NAMES_CONFIG['jinja2_config']: dict  # the jinja2's configuration
 }
 
 # The theme's parameters section configuration
 THEME_PARAMETERS_CONFIG = {
-    PARAMETERS_NAMES_CONFIG['theme']: '',
-    PARAMETERS_NAMES_CONFIG['project_name']: '',
-    PARAMETERS_NAMES_CONFIG['tex_preambule']: '',
-    PARAMETERS_NAMES_CONFIG['tex_options']: {},
-    PARAMETERS_NAMES_CONFIG['tex_sources']: []
+    PARAMETERS_NAMES_CONFIG['theme']: str,
+    PARAMETERS_NAMES_CONFIG['project_name']: str,
+    PARAMETERS_NAMES_CONFIG['tex_preambule']: str,
+    SECTION_NAMES_CONFIG['tex_options']: (
+        THEME_CONFIG[SECTION_NAMES_CONFIG['tex_options']]),
+    SECTION_NAMES_CONFIG['tex_program']: (
+        THEME_CONFIG[SECTION_NAMES_CONFIG['tex_program']]),
+    PARAMETERS_NAMES_CONFIG['tex_sources']: ([], '')
 }
 
 # The list of the registered themes
@@ -124,3 +131,18 @@ DUMP_FILES = {
     'themes_directories': path.join(USER_CONFIG_PATH,
                                     '.themes_directories.yaml')
 }
+
+
+def make_empty_theme():
+    """Make empty theme."""
+    theme = {
+        key: value()
+        for key, value in THEME_CONFIG.items()
+        if not isinstance(value, tuple)
+    }
+    theme.update({
+        key: list(value)[0]()
+        for key, value in THEME_CONFIG.items()
+        if isinstance(value, tuple)
+        })
+    return theme
