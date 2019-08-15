@@ -46,7 +46,7 @@ class ApplyThemeNotEmbedTestCase(unittest.TestCase):
                 r'\BLOCK{endblock lang}]{babel}''\n'
                 r'\usepackage[utf8]{inputenc}''\n'
                 r'\usepackage{sayhello}''\n\n'
-                r'%===========USER DEFINED PREAMBULES============='
+                r'%===========USER DEFINED PREAMBULES=============''\n'
                 r'\VAR{tex_preambule}''\n\n'
                 r'\begin{document}''\n'
                 r'\sayhello{\VAR{name}}{\VAR{lang}}''\n'
@@ -128,6 +128,79 @@ class ApplyThemeNotEmbedTestCase(unittest.TestCase):
             '\\usepackage{sayhello}\n'
             '\n'
             '%===========USER DEFINED PREAMBULES=============\n'
+            '\\usepackage{amsthm}\n\n\n'
+            '\\begin{document}\n'
+            '\\sayhello{Ivan Chizhov}{english}\n'
+            '\\include{hello.source.tex}\n'
+            '\n'
+            '\\end{document}'
+            )
+        with open(path.join(self.out_dir.name, 'saymyname.tex'), 'r') as file:
+            self.assertEqual(saymyname_tex, file.read())
+        with open(path.join(self.out_dir.name,
+                            'hello.source.tex'), 'r') as file:
+            self.assertEqual(file.read(), '%!TEX root=saymyname.tex\n')
+        with open(path.join(self.out_dir.name, 'sayhello.sty'), 'r') as file:
+            self.assertEqual(file.read(),
+                             self.theme_files[
+                                 'sayhello/sources/sty/sayhello.sty'])
+
+    def test_theme_is_not_specified(self):
+        """Test apply theme if theme's name is not specified."""
+        self.user_parameters.pop('theme')
+        with open(
+                path.join(self.out_dir.name,
+                          'saymyname.yaml'), 'w') as file:
+            file.write(safe_dump(self.user_parameters))
+        handler(config_file=path.join(self.out_dir.name, 'saymyname.yaml'))
+        self.assertFalse(path.exists(path.join(self.out_dir.name,
+                                               'saymyname.tex')))
+        self.assertFalse(path.exists(path.join(self.out_dir.name,
+                                               'hello.source.tex')))
+        self.assertFalse(path.exists(path.join(self.out_dir.name,
+                                               'sayhello.sty')))
+
+    def test_project_name_is_not_specified(self):
+        """Test apply theme if the project name is not specified."""
+        self.user_parameters.pop('project-name')
+        with open(
+                path.join(self.out_dir.name,
+                          'saymyname.yaml'), 'w') as file:
+            file.write(safe_dump(self.user_parameters))
+        handler(config_file=path.join(self.out_dir.name, 'saymyname.yaml'))
+        self.assertFalse(path.exists(path.join(self.out_dir.name,
+                                               'saymyname.tex')))
+        self.assertFalse(path.exists(path.join(self.out_dir.name,
+                                               'hello.source.tex')))
+        self.assertFalse(path.exists(path.join(self.out_dir.name,
+                                               'sayhello.sty')))
+
+    def test_tex_options_is_not_specified(self):
+        """Test applying theme if tex options is not specified."""
+        self.user_parameters.pop('tex-options')
+        with open(
+                path.join(self.out_dir.name,
+                          'saymyname.yaml'), 'w') as file:
+            file.write(safe_dump(self.user_parameters))
+        handler(config_file=path.join(self.out_dir.name, 'saymyname.yaml'))
+        self.assertTrue(path.exists(path.join(self.out_dir.name,
+                                              'saymyname.tex')))
+        self.assertTrue(path.exists(path.join(self.out_dir.name,
+                                              'hello.source.tex')))
+        self.assertTrue(path.exists(path.join(self.out_dir.name,
+                                              'sayhello.sty')))
+
+        saymyname_tex = (
+            '%!TEX options=-shell-escape\n'
+            '%!TEX program=pdflatex\n'
+            '%!TEX encoding=utf8\n'
+            '\\documentclass[twoside]{article}\n'
+            '\\usepackage[english]{babel}\n'
+            '\\usepackage[utf8]{inputenc}\n'
+            '\\usepackage{sayhello}\n'
+            '\n'
+            '%===========USER DEFINED PREAMBULES=============\n'
+            '\\usepackage{amsthm}\n\n'
             '\n'
             '\\begin{document}\n'
             '\\sayhello{Ivan Chizhov}{english}\n'
@@ -140,6 +213,88 @@ class ApplyThemeNotEmbedTestCase(unittest.TestCase):
         with open(path.join(self.out_dir.name,
                             'hello.source.tex'), 'r') as file:
             self.assertEqual(file.read(), '%!TEX root=saymyname.tex\n')
+        with open(path.join(self.out_dir.name, 'sayhello.sty'), 'r') as file:
+            self.assertEqual(file.read(),
+                             self.theme_files[
+                                 'sayhello/sources/sty/sayhello.sty'])
+
+    def test_tex_preambule_is_not_specified(self):
+        """Test applying theme if preambule is not specified."""
+        self.user_parameters.pop('tex_preambule')
+        with open(
+                path.join(self.out_dir.name,
+                          'saymyname.yaml'), 'w') as file:
+            file.write(safe_dump(self.user_parameters))
+        handler(config_file=path.join(self.out_dir.name, 'saymyname.yaml'))
+        self.assertTrue(path.exists(path.join(self.out_dir.name,
+                                              'saymyname.tex')))
+        self.assertTrue(path.exists(path.join(self.out_dir.name,
+                                              'hello.source.tex')))
+        self.assertTrue(path.exists(path.join(self.out_dir.name,
+                                              'sayhello.sty')))
+
+        saymyname_tex = (
+            '%!TEX options=-shell-escape\n'
+            '%!TEX program=xelatex\n'
+            '%!TEX encoding=utf8\n'
+            '%!TEX myoption=myvalue\n'
+            '\\documentclass[twoside]{article}\n'
+            '\\usepackage[english]{babel}\n'
+            '\\usepackage[utf8]{inputenc}\n'
+            '\\usepackage{sayhello}\n'
+            '\n'
+            '%===========USER DEFINED PREAMBULES=============\n'
+            '\n\n'
+            '\\begin{document}\n'
+            '\\sayhello{Ivan Chizhov}{english}\n'
+            '\\include{hello.source.tex}\n'
+            '\n'
+            '\\end{document}'
+            )
+        with open(path.join(self.out_dir.name, 'saymyname.tex'), 'r') as file:
+            self.assertEqual(saymyname_tex, file.read())
+        with open(path.join(self.out_dir.name,
+                            'hello.source.tex'), 'r') as file:
+            self.assertEqual(file.read(), '%!TEX root=saymyname.tex\n')
+        with open(path.join(self.out_dir.name, 'sayhello.sty'), 'r') as file:
+            self.assertEqual(file.read(),
+                             self.theme_files[
+                                 'sayhello/sources/sty/sayhello.sty'])
+
+    def test_tex_sources_is_not_specified(self):
+        """Test applying theme if tex options is not specified."""
+        self.user_parameters.pop('tex_sources')
+        with open(
+                path.join(self.out_dir.name,
+                          'saymyname.yaml'), 'w') as file:
+            file.write(safe_dump(self.user_parameters))
+        handler(config_file=path.join(self.out_dir.name, 'saymyname.yaml'))
+        self.assertTrue(path.exists(path.join(self.out_dir.name,
+                                              'saymyname.tex')))
+        self.assertFalse(path.exists(path.join(self.out_dir.name,
+                                               'hello.source.tex')))
+        self.assertTrue(path.exists(path.join(self.out_dir.name,
+                                              'sayhello.sty')))
+        saymyname_tex = (
+            '%!TEX options=-shell-escape\n'
+            '%!TEX program=xelatex\n'
+            '%!TEX encoding=utf8\n'
+            '%!TEX myoption=myvalue\n'
+            '\\documentclass[twoside]{article}\n'
+            '\\usepackage[english]{babel}\n'
+            '\\usepackage[utf8]{inputenc}\n'
+            '\\usepackage{sayhello}\n'
+            '\n'
+            '%===========USER DEFINED PREAMBULES=============\n'
+            '\\usepackage{amsthm}\n\n'
+            '\n'
+            '\\begin{document}\n'
+            '\\sayhello{Ivan Chizhov}{english}\n'
+            '\n'
+            '\\end{document}'
+            )
+        with open(path.join(self.out_dir.name, 'saymyname.tex'), 'r') as file:
+            self.assertEqual(saymyname_tex, file.read())
         with open(path.join(self.out_dir.name, 'sayhello.sty'), 'r') as file:
             self.assertEqual(file.read(),
                              self.theme_files[
