@@ -18,11 +18,12 @@ def load_theme_from_iterable(iterable):
     Note! That function does not set the `path` and the `name`
           of the theme configuration
     """
-    theme_config = dict(config.THEME_CONFIG)
+    theme_config = config.make_empty_theme()
     try:
-        theme_config.update(
-            {key: value for key, value in safe_load(iterable).items()
-             if key in config.THEME_CONFIG})
+        theme_config.update({
+            key: value for key, value in safe_load(iterable).items()
+            if key in config.THEME_CONFIG and
+            isinstance(value, config.THEME_CONFIG[key])})
     except ScannerError as error:
         LOG.debug('cannot load theme, error parse configuration `%s`: %s',
                   dict(iterable), error)
@@ -30,6 +31,12 @@ def load_theme_from_iterable(iterable):
     except AttributeError:
         LOG.debug('Iterable does not contain any information.')
         return {}
+    normalizer = {}
+    for section, value in theme_config.items():
+        if (config.THEME_CONFIG[section] == (list, str) and
+                isinstance(value, str)):
+            normalizer[section] = value.split(' ')
+    theme_config.update(normalizer)
     return theme_config
 
 
@@ -77,7 +84,7 @@ def load_theme(name):
                       path.normpath(config_filename)))
         LOG.debug('The config of the subtheme %s: %s', theme, subtheme_config)
         __update_dict(theme_config, subtheme_config,
-                      ['parameters', 'include_files', 'jinja2_config', 'tex'])
+                      ['parameters', 'include_files', 'jinja2_config'])
         LOG.debug('The value of the theme variables after '
                   'loading subtheme `%s`: `%s`',
                   theme, theme_config)
