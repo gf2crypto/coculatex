@@ -112,13 +112,13 @@ def handler(config_file=None, embed=False):
         tex_sources = [tex_sources]
     if embed:
         tex_sources += [path.basename(config_file)]
-    if not tex_sources:
-        LOG.error('Cannot apply theme, because no one source file '
-                  'is not specified, check the directive `%s` '
-                  'in your configuration: %s',
-                  PARAMETERS_NAMES_CONFIG['tex_sources'],
-                  params)
-        return 1
+    # if not tex_sources:
+    #     LOG.error('Cannot apply theme, because no one source file '
+    #               'is not specified, check the directive `%s` '
+    #               'in your configuration: %s',
+    #               PARAMETERS_NAMES_CONFIG['tex_sources'],
+    #               params)
+    #     return 1
     LOG.debug('List of the `TeX` sources files: %s', tex_sources)
     result = __write_template(root_path=path.join(
         path.dirname(theme['path']),
@@ -244,6 +244,7 @@ def __write_template(root_path,
                   type(tex_sources))
     LOG.debug('`tex_main` string: %s', tex_main_str)
     values['tex_main'] = tex_main_str
+    print(values)
     try:
         data = Environment(
             loader=FileSystemLoader(path.dirname(root_path),

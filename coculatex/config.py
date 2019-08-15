@@ -69,9 +69,9 @@ SECTION_NAMES_CONFIG = {
 # Additiona theme variables which is specified in user configuration
 PARAMETERS_NAMES_CONFIG = {
     'theme': 'theme',  # the theme's name block
-    'project_name': 'project-name',  # the project name's block
-    'tex_preambule': 'tex-preambule',  # the block containing the tex preambule
-    'tex_options': 'tex-options',       # the block containing
+    'project_name': 'project_name',  # the project name's block
+    'tex_preambule': 'tex_preambule',  # the block containing the tex preambule
+    'tex_options': 'tex_options',       # the block containing
                                         # the tex additional options
     'tex_sources': 'tex_sources'  # the list of sources file block
 }
