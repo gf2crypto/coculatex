@@ -113,12 +113,13 @@ class ListThemesTestCase(unittest.TestCase):
 
     def test_list_root_not_detailed(self):
         """Test list all themes, not detailed."""
-        self.assertEqual('a b c ', handler())
+        self.assertEqual(sorted('a b c '.split(' ')),
+                         sorted(handler().split(' ')))
 
     def test_list_root_detailed(self):
         """Test list all themes, not detailed."""
         out_str = ''
-        for name in ['a', 'b', 'c']:
+        for name in [n for n in handler().split(' ') if n]:
             desc = self.themes[name].get(
                 config.SECTION_NAMES_CONFIG['description'],
                 'no description')
