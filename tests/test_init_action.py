@@ -231,7 +231,8 @@ class ThemeLoaderTestCase(unittest.TestCase):
         out_path = path.join(self.out_dir.name,
                              'my_project' + '.yaml')
         self.assertTrue(path.exists(out_path))
-        params = {'theme': 'alpha{sep}a{sep}a1'.format(sep=config.THEME_NAME_SEP),
+        params = {'theme': 'alpha{sep}a{sep}a1'.format(
+            sep=config.THEME_NAME_SEP),
                   'project-name': 'my_project'}
         params.update(
             self.themes[
