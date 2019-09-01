@@ -7,7 +7,8 @@ from yaml import dump
 from coculatex.config import (LTCONFIG,
                               PARAMETERS_BEGIN,
                               PARAMETERS_END,
-                              THEME_PARAMETERS_CONFIG)
+                              THEME_PARAMETERS_CONFIG,
+                              make_default_params)
 from coculatex.themeloader import load_theme
 
 LOG = logging.getLogger(__name__)
@@ -61,14 +62,16 @@ def handler(theme,
     theme_config = load_theme(theme)
     LOG.debug('The theme `%s` from is loaded: %s',
               theme, theme_config)
+    empty_theme = make_default_params()
     if PARAMETERS_BEGIN:
-        theme_parameters = {item: THEME_PARAMETERS_CONFIG[item]
+        theme_parameters = {item: empty_theme[item]
                             for item in PARAMETERS_BEGIN}
     else:
         theme_parameters = {}
     theme_parameters.update(theme_config.get('parameters', {}))
+    print(theme_parameters)
     if PARAMETERS_END:
-        theme_parameters.update({item: THEME_PARAMETERS_CONFIG[item]
+        theme_parameters.update({item: empty_theme[item]
                                  for item in PARAMETERS_END})
     config_dump = dump(theme_parameters,
                        sort_keys=False,

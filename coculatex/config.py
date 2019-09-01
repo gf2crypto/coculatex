@@ -49,13 +49,13 @@ SECTION_NAMES_CONFIG = {
                                  #  of the template variables
     'description': 'description',  # the name of the block
                                    # containing the theme's description
-    'root_file': 'root_file',  # the name of the block contained
+    'root_file': 'root-file',  # the name of the block contained
                                # the root file name
-    'tex_options': 'tex_options',       # the block containing
+    'tex_options': 'tex-options',       # the block containing
                                         # the tex additional options
-    'tex_program': 'tex_program',       # the block containing
+    'tex_program': 'tex-program',       # the block containing
                                         # the tex additional options
-    'include_files': 'include_files',  # the name of the block containing
+    'include_files': 'include-files',  # the name of the block containing
                                        # the dictionary of the additional files
                                        # which would be copied to
                                        # the working directory
@@ -65,16 +65,16 @@ SECTION_NAMES_CONFIG = {
                          # the readme file
     'example': 'example',  # the name of the block containing the relaitive
                            # theme directory path to the example file
-    'jinja2_config': 'jinja2_config'  # the name of the block containing
+    'jinja2_config': 'jinja2-config'  # the name of the block containing
                                       # the configuration of jinja2 template
 }
 
 # Additiona theme variables which is specified in user configuration
 PARAMETERS_NAMES_CONFIG = {
     'theme': 'theme',  # the theme's name block
-    'project_name': 'project_name',  # the project name's block
-    'tex_preambule': 'tex_preambule',  # the block containing the tex preambule
-    'tex_sources': 'tex_sources'  # the list of sources file block
+    'project_name': 'project-name',  # the project name's block
+    'tex_preambule': 'tex-preambule',  # the block containing the tex preambule
+    'tex_sources': 'tex-sources'  # the list of sources file block
 }
 
 # This parameters will add in the begin of the configuration
@@ -117,7 +117,7 @@ THEME_PARAMETERS_CONFIG = {
         THEME_CONFIG[SECTION_NAMES_CONFIG['tex_options']]),
     SECTION_NAMES_CONFIG['tex_program']: (
         THEME_CONFIG[SECTION_NAMES_CONFIG['tex_program']]),
-    PARAMETERS_NAMES_CONFIG['tex_sources']: ([], '')
+    PARAMETERS_NAMES_CONFIG['tex_sources']: (list, str)
 }
 
 # The list of the registered themes
@@ -146,3 +146,18 @@ def make_empty_theme():
         if isinstance(value, tuple)
         })
     return theme
+
+
+def make_default_params():
+    """Make default theme's parameters."""
+    params = {
+        key: value()
+        for key, value in THEME_PARAMETERS_CONFIG.items()
+        if not isinstance(value, tuple)
+    }
+    params.update({
+        key: list(value)[0]()
+        for key, value in THEME_PARAMETERS_CONFIG.items()
+        if isinstance(value, tuple)
+        })
+    return params
