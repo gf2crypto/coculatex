@@ -7,7 +7,7 @@ from yaml import dump
 from coculatex.config import (LTCONFIG,
                               PARAMETERS_BEGIN,
                               PARAMETERS_END,
-                              THEME_PARAMETERS_CONFIG,
+                              PARAMETERS_NAMES_CONFIG,
                               make_default_params)
 from coculatex.themeloader import load_theme
 
@@ -69,7 +69,9 @@ def handler(theme,
     else:
         theme_parameters = {}
     theme_parameters.update(theme_config.get('parameters', {}))
-    print(theme_parameters)
+    theme_parameters.update({
+        PARAMETERS_NAMES_CONFIG['theme']: theme,
+        PARAMETERS_NAMES_CONFIG['project_name']: project_name})
     if PARAMETERS_END:
         theme_parameters.update({item: empty_theme[item]
                                  for item in PARAMETERS_END})
