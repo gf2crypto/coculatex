@@ -73,10 +73,10 @@ class ThemeLoaderTestCase(unittest.TestCase):
         self.assertTrue(path.exists(out_path))
         params = {'theme': 'alpha', 'project-name': 'alpha'}
         params.update(self.themes['alpha'].get('parameters', {}))
-        params.update({'tex-preambule': '',
-                       'tex-options': [],
-                       'tex-program': '',
-                       'tex-sources': []})
+        params.update({
+            'tex-options': [],
+            'tex-preambule': '',
+            'tex-sources': []})
         with open(out_path, 'r', encoding='utf-8') as file:
             self.assertEqual(file.read(), safe_dump(params, sort_keys=False))
 
@@ -89,10 +89,10 @@ class ThemeLoaderTestCase(unittest.TestCase):
         self.assertTrue(path.exists(out_path))
         params = {'theme': 'alpha', 'project-name': 'alpha'}
         params.update(self.themes['alpha'].get('parameters', {}))
-        params.update({'tex-preambule': '',
-                       'tex-options': [],
-                       'tex-program': '',
-                       'tex-sources': []})
+        params.update({
+            'tex-options': [],
+            'tex-preambule': '',
+            'tex-sources': []})
         content = ''
         for line in safe_dump(params, sort_keys=False).split('\n'):
             if line:
@@ -113,10 +113,10 @@ class ThemeLoaderTestCase(unittest.TestCase):
         self.assertTrue(path.exists(out_path))
         params = {'theme': 'alpha', 'project-name': 'my_project'}
         params.update(self.themes['alpha'].get('parameters', {}))
-        params.update({'tex-preambule': '',
-                       'tex-options': [],
-                       'tex-program': '',
-                       'tex-sources': []})
+        params.update({
+            'tex-options': [],
+            'tex-preambule': '',
+            'tex-sources': []})
         with open(out_path, 'r', encoding='utf-8') as file:
             self.assertEqual(file.read(), safe_dump(params, sort_keys=False))
 
@@ -130,10 +130,10 @@ class ThemeLoaderTestCase(unittest.TestCase):
         self.assertTrue(path.exists(out_path))
         params = {'theme': 'alpha', 'project-name': 'my_project'}
         params.update(self.themes['alpha'].get('parameters', {}))
-        params.update({'tex-preambule': '',
-                       'tex-options': [],
-                       'tex-program': '',
-                       'tex-sources': []})
+        params.update({
+            'tex-options': [],
+            'tex-preambule': '',
+            'tex-sources': []})
         content = ''
         for line in safe_dump(params, sort_keys=False).split('\n'):
             if line:

@@ -74,7 +74,8 @@ PARAMETERS_NAMES_CONFIG = {
     'theme': 'theme',  # the theme's name block
     'project_name': 'project-name',  # the project name's block
     'tex_preambule': 'tex-preambule',  # the block containing the tex preambule
-    'tex_sources': 'tex-sources'  # the list of sources file block
+    'tex_sources': 'tex-sources',  # the list of sources file block
+    'tex_options': SECTION_NAMES_CONFIG['tex_options']
 }
 
 # This parameters will add in the begin of the configuration
@@ -85,10 +86,9 @@ PARAMETERS_BEGIN = [
 
 # This parameters will add in the end of the configuration
 PARAMETERS_END = [
+    PARAMETERS_NAMES_CONFIG['tex_options'],
     PARAMETERS_NAMES_CONFIG['tex_preambule'],
-    SECTION_NAMES_CONFIG['tex_options'],
-    SECTION_NAMES_CONFIG['tex_program'],
-    PARAMETERS_NAMES_CONFIG['tex_sources']
+    PARAMETERS_NAMES_CONFIG['tex_sources'],
 ]
 
 # The theme's configuration
@@ -113,10 +113,8 @@ THEME_PARAMETERS_CONFIG = {
     PARAMETERS_NAMES_CONFIG['theme']: str,
     PARAMETERS_NAMES_CONFIG['project_name']: str,
     PARAMETERS_NAMES_CONFIG['tex_preambule']: str,
-    SECTION_NAMES_CONFIG['tex_options']: (
+    PARAMETERS_NAMES_CONFIG['tex_options']: (
         THEME_CONFIG[SECTION_NAMES_CONFIG['tex_options']]),
-    SECTION_NAMES_CONFIG['tex_program']: (
-        THEME_CONFIG[SECTION_NAMES_CONFIG['tex_program']]),
     PARAMETERS_NAMES_CONFIG['tex_sources']: (list, str)
 }
 
