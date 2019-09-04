@@ -20,23 +20,18 @@ class ApplyThemeNotEmbedTestCase(unittest.TestCase):
 
         self.themes_config = {
             'sayhello': (
-                'path: {path}\n'
                 '{parameters}:\n'
                 '    name: Noname\n'
                 '    lang: english\n'
                 '{description}: just say hello to someone\n'
                 '{root_file}: sources/sayhello.tex\n'
-                '{tex}:\n'
-                '    options: [ \'-shell-escape\' ]\n'
-                '    program: pdflatex\n'
-                '    encoding: utf8\n'
+                '{tex_options}: [ \'-shell-escape\' ]\n'
+                '{tex_program}: pdflatex\n'
                 '{include_files}:\n'
                 '    sayhello.sty: sources/sty/sayhello.sty\n'
                 '{readme}: readme.txt\n'
                 '{example}: example\n'
-                ''.format(**config.SECTION_NAMES_CONFIG,
-                          path=path.join(self.theme_dir.name, 'alpha',
-                                         'config.yaml'))
+                ''.format(**config.SECTION_NAMES_CONFIG)
             )
         }
         self.theme_files = {
@@ -71,8 +66,7 @@ class ApplyThemeNotEmbedTestCase(unittest.TestCase):
             'name: Ivan Chizhov\n'
             'lang: english\n'
             '{tex_options}:\n'
-            '    program: xelatex\n'
-            '    myoption: myvalue\n'
+            '    - myoption\n'
             '{tex_preambule}: |''\n'
             '  \\usepackage{{amsthm}}''\n'
             '{tex_sources}:\n'
@@ -88,7 +82,7 @@ class ApplyThemeNotEmbedTestCase(unittest.TestCase):
             makedirs(path.join(self.theme_dir.name, name), exist_ok=True)
             with open(path.join(self.theme_dir.name,
                                 name, 'config.yaml'), 'w') as file:
-                file.write(value)
+                file.write(safe_dump(value))
 
         for name, value in self.theme_files.items():
             makedirs(path.dirname(path.join(self.theme_dir.name,
@@ -118,10 +112,7 @@ class ApplyThemeNotEmbedTestCase(unittest.TestCase):
                                               'sayhello.sty')))
 
         saymyname_tex = (
-            '%!TEX options=-shell-escape\n'
-            '%!TEX program=xelatex\n'
-            '%!TEX encoding=utf8\n'
-            '%!TEX myoption=myvalue\n'
+            '%!TEX options=-shell-escape myoption\n'
             '\\documentclass[twoside]{article}\n'
             '\\usepackage[english]{babel}\n'
             '\\usepackage[utf8]{inputenc}\n'
@@ -193,7 +184,6 @@ class ApplyThemeNotEmbedTestCase(unittest.TestCase):
         saymyname_tex = (
             '%!TEX options=-shell-escape\n'
             '%!TEX program=pdflatex\n'
-            '%!TEX encoding=utf8\n'
             '\\documentclass[twoside]{article}\n'
             '\\usepackage[english]{babel}\n'
             '\\usepackage[utf8]{inputenc}\n'
@@ -234,10 +224,7 @@ class ApplyThemeNotEmbedTestCase(unittest.TestCase):
                                               'sayhello.sty')))
 
         saymyname_tex = (
-            '%!TEX options=-shell-escape\n'
-            '%!TEX program=xelatex\n'
-            '%!TEX encoding=utf8\n'
-            '%!TEX myoption=myvalue\n'
+            '%!TEX options=-shell-escape myoption\n'
             '\\documentclass[twoside]{article}\n'
             '\\usepackage[english]{babel}\n'
             '\\usepackage[utf8]{inputenc}\n'
@@ -276,10 +263,8 @@ class ApplyThemeNotEmbedTestCase(unittest.TestCase):
         self.assertTrue(path.exists(path.join(self.out_dir.name,
                                               'sayhello.sty')))
         saymyname_tex = (
-            '%!TEX options=-shell-escape\n'
-            '%!TEX program=xelatex\n'
-            '%!TEX encoding=utf8\n'
-            '%!TEX myoption=myvalue\n'
+            '%!TEX options=-shell-escape myoption\n'
+            '%!TEX program=pdflatex\n'
             '\\documentclass[twoside]{article}\n'
             '\\usepackage[english]{babel}\n'
             '\\usepackage[utf8]{inputenc}\n'
