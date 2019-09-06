@@ -210,7 +210,8 @@ class ApplyThemeNotEmbedTestCase(unittest.TestCase):
 
     def test_tex_preambule_is_not_specified(self):
         """Test applying theme if preambule is not specified."""
-        self.user_parameters.pop('tex_preambule')
+        self.user_parameters.pop(
+            config.PARAMETERS_NAMES_CONFIG['tex_preambule'])
         with open(
                 path.join(self.out_dir.name,
                           'saymyname.yaml'), 'w') as file:
@@ -250,7 +251,8 @@ class ApplyThemeNotEmbedTestCase(unittest.TestCase):
 
     def test_tex_sources_is_not_specified(self):
         """Test applying theme if tex options is not specified."""
-        self.user_parameters.pop('tex_sources')
+        self.user_parameters.pop(
+            config.PARAMETERS_NAMES_CONFIG['tex_sources'])
         with open(
                 path.join(self.out_dir.name,
                           'saymyname.yaml'), 'w') as file:

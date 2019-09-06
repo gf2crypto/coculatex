@@ -104,9 +104,15 @@ def handler(config_file=None, embed=False):
     out_file = '{project_name}.{ext}'.format(
         project_name=params.pop(PARAMETERS_NAMES_CONFIG['project_name']),
         ext=LTCONFIG['tex_ext'])
-    tex_options = theme[SECTION_NAMES_CONFIG['tex']]
-    tex_options.update(params.pop(PARAMETERS_NAMES_CONFIG['tex_options']))
-    __write_tex_options(path.join(working_dir, out_file), tex_options)
+    print(theme)
+    tex_options = (
+        list(theme.get(SECTION_NAMES_CONFIG['tex_options'], [])) +
+        list(params.pop(PARAMETERS_NAMES_CONFIG['tex_options'], []))
+        )
+    tex_program = params.pop(SECTION_NAMES_CONFIG['tex_program'], '')
+    __write_tex_options(path.join(working_dir, out_file),
+                        tex_program,
+                        tex_options)
     tex_sources = params.pop(PARAMETERS_NAMES_CONFIG['tex_sources'], [])
     if isinstance(tex_sources, str):
         tex_sources = [tex_sources]
@@ -192,23 +198,16 @@ def __load_params(config_file, embed):
 
 
 def __write_tex_options(out_path,
+                        tex_program,
                         tex_options):
     """Write the tex options to the file."""
     with open(out_path, 'a', encoding='utf-8') as file:
-        for name, value in tex_options.items():
-            if isinstance(value, list):
-                try:
-                    file.write(
-                        '%!TEX {}={}\n'.format(
-                            name,
-                            ' '.join(value)
-                            ))
-                except (TypeError, ValueError, AttributeError) as error:
-                    LOG.debug('Magic comment `%s` is not list, pass it: %s',
-                              name,
-                              error)
-            else:
-                file.write('%!TEX {}={}\n'.format(name, value))
+        if tex_program:
+            file.write('%!TEX root={}\n'.format(tex_program))
+        try:
+            file.write('%!TEX options={}\n'.format(' '.join(tex_options)))
+        except TypeError:
+            LOG.debug('`tex_options` is not iterable: pass it')
 
 
 def __write_template(root_path,
