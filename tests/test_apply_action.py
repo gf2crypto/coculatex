@@ -82,7 +82,7 @@ class ApplyThemeNotEmbedTestCase(unittest.TestCase):
             makedirs(path.join(self.theme_dir.name, name), exist_ok=True)
             with open(path.join(self.theme_dir.name,
                                 name, 'config.yaml'), 'w') as file:
-                file.write(safe_dump(value))
+                file.write(value)
 
         for name, value in self.theme_files.items():
             makedirs(path.dirname(path.join(self.theme_dir.name,
@@ -112,6 +112,7 @@ class ApplyThemeNotEmbedTestCase(unittest.TestCase):
                                               'sayhello.sty')))
 
         saymyname_tex = (
+            '%!TEX program=pdflatex\n'
             '%!TEX options=-shell-escape myoption\n'
             '\\documentclass[twoside]{article}\n'
             '\\usepackage[english]{babel}\n'
@@ -182,8 +183,8 @@ class ApplyThemeNotEmbedTestCase(unittest.TestCase):
                                               'sayhello.sty')))
 
         saymyname_tex = (
-            '%!TEX options=-shell-escape\n'
             '%!TEX program=pdflatex\n'
+            '%!TEX options=-shell-escape\n'
             '\\documentclass[twoside]{article}\n'
             '\\usepackage[english]{babel}\n'
             '\\usepackage[utf8]{inputenc}\n'
@@ -225,6 +226,7 @@ class ApplyThemeNotEmbedTestCase(unittest.TestCase):
                                               'sayhello.sty')))
 
         saymyname_tex = (
+            '%!TEX program=pdflatex\n'
             '%!TEX options=-shell-escape myoption\n'
             '\\documentclass[twoside]{article}\n'
             '\\usepackage[english]{babel}\n'
@@ -265,8 +267,8 @@ class ApplyThemeNotEmbedTestCase(unittest.TestCase):
         self.assertTrue(path.exists(path.join(self.out_dir.name,
                                               'sayhello.sty')))
         saymyname_tex = (
-            '%!TEX options=-shell-escape myoption\n'
             '%!TEX program=pdflatex\n'
+            '%!TEX options=-shell-escape myoption\n'
             '\\documentclass[twoside]{article}\n'
             '\\usepackage[english]{babel}\n'
             '\\usepackage[utf8]{inputenc}\n'
