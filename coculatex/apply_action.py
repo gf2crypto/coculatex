@@ -104,12 +104,11 @@ def handler(config_file=None, embed=False):
     out_file = '{project_name}.{ext}'.format(
         project_name=params.pop(PARAMETERS_NAMES_CONFIG['project_name']),
         ext=LTCONFIG['tex_ext'])
-    print(theme)
     tex_options = (
         list(theme.get(SECTION_NAMES_CONFIG['tex_options'], [])) +
         list(params.pop(PARAMETERS_NAMES_CONFIG['tex_options'], []))
         )
-    tex_program = params.pop(SECTION_NAMES_CONFIG['tex_program'], '')
+    tex_program = theme.pop(SECTION_NAMES_CONFIG['tex_program'], '')
     __write_tex_options(path.join(working_dir, out_file),
                         tex_program,
                         tex_options)
@@ -154,7 +153,6 @@ def __load_params(config_file, embed):
     :param: `bool` embed - if it is setted to the True the configuration
                            file is a tex file with the embeded config.
     """
-    params = dict(THEME_PARAMETERS_CONFIG)
     try:
         with open(config_file, 'r', encoding='utf-8') as file:
             if embed:
@@ -170,14 +168,17 @@ def __load_params(config_file, embed):
         LOG.error('The problem happens while parse config file '
                   '%s: %s', config_file, error)
         return None
+    params = {}
     if user_params:
-        for name, value in params.items():
-            if name in user_params and not isinstance(user_params[name],
-                                                      type(value)):
+        for name, value in user_params.items():
+            if (name in THEME_PARAMETERS_CONFIG and
+                    not isinstance(value, THEME_PARAMETERS_CONFIG[name])):
                 LOG.debug('Expected `%s` is `%s`, but got `%s`',
-                          name, type(value), type(user_params[name]))
-                user_params.pop(name)
-        params.update(user_params)
+                          name,
+                          THEME_PARAMETERS_CONFIG[name],
+                          type(value))
+            else:
+                params[name] = value
 
     # LOG.debug('The output directory: %s', working_dir)
     if not params.get(PARAMETERS_NAMES_CONFIG['theme']):
@@ -203,7 +204,7 @@ def __write_tex_options(out_path,
     """Write the tex options to the file."""
     with open(out_path, 'a', encoding='utf-8') as file:
         if tex_program:
-            file.write('%!TEX root={}\n'.format(tex_program))
+            file.write('%!TEX program={}\n'.format(tex_program))
         try:
             file.write('%!TEX options={}\n'.format(' '.join(tex_options)))
         except TypeError:
@@ -243,7 +244,8 @@ def __write_template(root_path,
                   type(tex_sources))
     LOG.debug('`tex_main` string: %s', tex_main_str)
     values['tex_main'] = tex_main_str
-    print(values)
+    values['tex_preambule'] = values.pop(
+        PARAMETERS_NAMES_CONFIG['tex_preambule'], '')
     try:
         data = Environment(
             loader=FileSystemLoader(path.dirname(root_path),
