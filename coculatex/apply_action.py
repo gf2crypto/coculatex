@@ -47,7 +47,7 @@ def __find_config_file():
     yaml_files = [filename
                   for filename in listdir(curr_path)
                   if filename.endswith('.yaml')]
-    if len(yaml_files) != []:
+    if yaml_files:
         file_path = path.join(curr_path, yaml_files[0])
         LOG.debug('Found yaml file configuration: %s', file_path)
         if len(yaml_files) > 1:
