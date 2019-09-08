@@ -8,6 +8,7 @@ from coculatex.config import (LTCONFIG,
                               PARAMETERS_BEGIN,
                               PARAMETERS_END,
                               PARAMETERS_NAMES_CONFIG,
+                              THEME_CONFIG_FILENAME,
                               make_default_params)
 from coculatex.themeloader import load_theme
 
@@ -92,7 +93,7 @@ def handler(theme,
                 content += '\n'
     else:
         output_file = path.join(output_directory,
-                                project_name + '.yaml')
+                                THEME_CONFIG_FILENAME)
         content = config_dump
     LOG.debug('The output file: %s', output_file)
     LOG.debug('The content of the theme configuration:\n%s', content)

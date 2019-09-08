@@ -69,7 +69,7 @@ class ThemeLoaderTestCase(unittest.TestCase):
         """Test init the theme, default parameters."""
         handler('alpha', output_directory=self.out_dir.name)
         out_path = path.join(self.out_dir.name,
-                             'alpha' + '.yaml')
+                             config.THEME_CONFIG_FILENAME)
         self.assertTrue(path.exists(out_path))
         params = {'theme': 'alpha', 'project-name': 'alpha'}
         params.update(self.themes['alpha'].get('parameters', {}))
@@ -109,7 +109,7 @@ class ThemeLoaderTestCase(unittest.TestCase):
         handler('alpha', project_name='my_project',
                 output_directory=self.out_dir.name)
         out_path = path.join(self.out_dir.name,
-                             'my_project' + '.yaml')
+                             config.THEME_CONFIG_FILENAME)
         self.assertTrue(path.exists(out_path))
         params = {'theme': 'alpha', 'project-name': 'my_project'}
         params.update(self.themes['alpha'].get('parameters', {}))
