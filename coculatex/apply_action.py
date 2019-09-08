@@ -48,7 +48,10 @@ def __find_config_file():
                   for filename in listdir(curr_path)
                   if filename.endswith('.yaml')]
     if yaml_files:
-        file_path = path.join(curr_path, yaml_files[0])
+        if 'config.yaml' in yaml_files:
+            file_path = path.join(curr_path, 'config.yaml')
+        else:
+            file_path = path.join(curr_path, yaml_files[0])
         LOG.debug('Found yaml file configuration: %s', file_path)
         if len(yaml_files) > 1:
             LOG.warning('Found many configurations files %s, but we used only '
