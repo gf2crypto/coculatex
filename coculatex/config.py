@@ -104,7 +104,7 @@ THEME_CONFIG = {
     SECTION_NAMES_CONFIG['tex_program']: str,  # the compiling TeX options
     SECTION_NAMES_CONFIG['include_files']: dict,  # the theme's addition files
     SECTION_NAMES_CONFIG['readme']: str,  # the readme file name
-    SECTION_NAMES_CONFIG['example']: str,  # the relative path to the example
+    SECTION_NAMES_CONFIG['example']: dict,  # the relative path to the example
     SECTION_NAMES_CONFIG['jinja2_config']: dict  # the jinja2's configuration
 }
 
