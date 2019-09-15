@@ -10,8 +10,8 @@ import coculatex.config as config
 from coculatex.init_action import handler
 
 
-class ThemeLoaderTestCase(unittest.TestCase):
-    """Test Case for function `extract_variables`."""
+class ThemeInitTestCase(unittest.TestCase):
+    """Test Case for init theme."""
 
     def setUp(self):
         """Prepartion for the test case."""
