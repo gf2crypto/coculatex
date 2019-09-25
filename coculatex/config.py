@@ -37,7 +37,8 @@ LTCONFIG = {
     'config_prefix': r'%%=',  # prefix for the line
                               # contained the template variables
     'source_ext': 'source.tex',  # extension of the source tex file
-    'tex_ext': 'tex'
+    'tex_ext': 'tex',
+    'root_file': 'root.tex',  # the name of the root TeX-file
 }
 
 # The names of the configuration file's sections

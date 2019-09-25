@@ -2,12 +2,16 @@
 import logging
 from os import (getcwd,
                 path,
-                makedirs)
+                makedirs,
+                listdir,)
+from shutil import (copytree,
+                    copy2)
 from yaml import dump
 from coculatex.config import (LTCONFIG,
                               PARAMETERS_BEGIN,
                               PARAMETERS_END,
                               PARAMETERS_NAMES_CONFIG,
+                              SECTION_NAMES_CONFIG,
                               THEME_CONFIG_FILENAME,
                               make_default_params)
 from coculatex.themeloader import load_theme
@@ -40,29 +44,10 @@ def register(arg_parser):
     parser.set_defaults(func=handler)
 
 
-def handler(theme,
-            project_name=None,
-            output_directory=None,
-            embed=False):
-    """Init the theme `theme` in the output directory.
-
-    In the result of the function evaluation,
-    the sample config file will be created.
-
-    :param: `str` theme - the name of the theme
-    :param: `str` project_name - the name of the project
-    :param: `str` output_directory - the path to output directory
-    :param: `bool` embed - if it is true the function places config
-                           straight to the tex-file
-    :return: no return value
-    """
-    if not project_name:
-        project_name = theme
-    LOG.debug('The project name is %s', project_name)
-    LOG.debug('The output directory is %s', output_directory)
-    theme_config = load_theme(theme)
-    LOG.debug('The theme `%s` from is loaded: %s',
-              theme, theme_config)
+def __make_theme_parameters(theme_config,
+                            theme,
+                            project_name):
+    """Make the parameters of the theme."""
     empty_theme = make_default_params()
     if PARAMETERS_BEGIN:
         theme_parameters = {item: empty_theme[item]
@@ -76,13 +61,35 @@ def handler(theme,
     if PARAMETERS_END:
         theme_parameters.update({item: empty_theme[item]
                                  for item in PARAMETERS_END})
+    return theme_parameters
+
+
+def __copy_example_files(output_directory,
+                         example_path,
+                         embed):
+    """Copy the example files of a theme."""
+    try:
+        for src, dst in [(path.join(example_path, file),
+                          path.join(output_directory, file))
+                         for file in listdir(example_path)
+                         if embed and file == LTCONFIG['root_file']]:
+            if path.isdir(src):
+                copytree(src, dst)
+            else:
+                copy2(src, dst)
+    except (FileNotFoundError, IOError) as error:
+        LOG.debug('Cannot copy addons files of the example: %s', error)
+
+
+def __write_init_file(theme_parameters,
+                      output_directory,
+                      example_root,
+                      embed):
+    """Write the root init file of a theme."""
     config_dump = dump(theme_parameters,
                        sort_keys=False,
                        allow_unicode=True)
     if embed:
-        output_file = path.join(
-            output_directory,
-            project_name + '.{}'.format(LTCONFIG['source_ext']))
         content = ''
         for line in config_dump.split('\n'):
             if line:
@@ -91,6 +98,15 @@ def handler(theme,
                     line)
             else:
                 content += '\n'
+        try:
+            with open(example_root, 'r', encoding='utf-8') as file:
+                content += file.read()
+        except (FileNotFoundError, IOError, PermissionError) as error:
+            LOG.debug('Cannot read the file %s, error: %s',
+                      example_root,
+                      error)
+        except NameError:
+            pass
     else:
         output_file = path.join(output_directory,
                                 THEME_CONFIG_FILENAME)
@@ -107,3 +123,55 @@ def handler(theme,
                   'existence of the path and '
                   'the permissions it.\n'
                   'The error: %s', output_file, error)
+
+
+def handler(theme,
+            project_name=None,
+            output_directory=None,
+            embed=False,
+            make_example=False):
+    """Init the theme `theme` in the output directory.
+
+    In the result of the function evaluation,
+    the sample config file will be created.
+
+    :param: `str` theme - the name of the theme
+    :param: `str` project_name - the name of the project
+    :param: `str` output_directory - the path to output directory
+    :param: `bool` embed - if it is true the function places config
+                           straight to the tex-file
+    :param: `bool` make_example - if it is true the source example is created;
+                                   Note: a theme must provide the example.
+    :return: no return value
+    """
+    if not project_name:
+        project_name = theme
+    LOG.debug('The project name is %s', project_name)
+    LOG.debug('The output directory is %s', output_directory)
+    theme_config = load_theme(theme)
+    LOG.debug('The theme `%s` from is loaded: %s',
+              theme, theme_config)
+    theme_parameters = __make_theme_parameters(theme_config,
+                                               theme,
+                                               project_name)
+    if embed:
+        output_file = path.join(
+            output_directory,
+            project_name + '.{}'.format(LTCONFIG['source_ext']))
+    else:
+        output_file = path.join(output_directory,
+                                THEME_CONFIG_FILENAME)
+    if make_example:
+        example = theme_config.get(SECTION_NAMES_CONFIG['example'], {})
+        example_path = example.get('path', '')
+        example_sources = example.get('sources', [])
+        example_root = path.join(theme_config['path'],
+                                 example_path,
+                                 LTCONFIG['root_file'])
+        if not embed:
+            example_sources.append(path.basename(output_file))
+        theme_parameters.update({
+            PARAMETERS_NAMES_CONFIG['tex_sources']: example_sources})
+
+    __write_init_file(theme_parameters, output_directory, example_root, embed)
+    __copy_example_files(output_directory, example_path, embed)
