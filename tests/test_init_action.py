@@ -180,8 +180,6 @@ class ThemeInitMakeExampleTestCase(unittest.TestCase):
                 '{readme}: readme.txt\n'
                 '{example}:\n'
                 '    path: examples/alpha\n'
-                '    sources:\n'
-                '        - section01.tex\n'
                 '{jinja2_config}:\n'
                 '    autoescape: true\n'
                 '    line_comment_prefix:' r' "%%##"' '\n'
@@ -189,7 +187,7 @@ class ThemeInitMakeExampleTestCase(unittest.TestCase):
                           path=path.join(self.tempdir.name, 'alpha',
                                          'config.yaml'))
             ),
-            'alpha_multiple_source': (
+            'alpha_multiple_sources': (
                 'path: {path}\n'
                 '{subthemes}:\n'
                 '    a: a/a.yaml\n'
@@ -221,7 +219,36 @@ class ThemeInitMakeExampleTestCase(unittest.TestCase):
                                          'config.yaml'))
             ),
         }
-        self.examples = {
+        self.examples_one_source = {
+            config.LTCONFIG['root_file']: (
+                '\\usepackage{{mystyle}}\n'
+                '\\begin{{document}}\n'
+                '  \\section{{This is the first section}}\n'
+                '    Hello, I\'m first section!\n'
+                '    This is just text: bla, bla, bla\n'
+                '\n\n\n'
+                '  \\section{{This is the second section}}\n'
+                '    Hello, I\'m second section!\n'
+                '    The text of the section number 2.\n'
+                '    Third line of the section\'s text\n'
+                '\\end{{document}}\n'
+                ),
+            'pictures/pic.jpg': (
+                'This is picture\n.'
+                'Sorry, It is text picture.'
+                ),
+            'mystyle.sty': (
+                '\\newcommand{{\\mycommand}}{{1}}{{\\textbf{{#1}}}}\n'
+                )
+        }
+        self.examples_multiple_sources = {
+            config.LTCONFIG['root_file']: (
+                '\\usepackage{{mystyle}}\n'
+                '\\begin{{document}}\n'
+                '  \\include{{section01}}\n'
+                '  \\include{{section02}}\n'
+                '\\end{{document}}\n'
+                ),
             'section01.tex': (
                 '\\section{{This is the first section}}\n'
                 'Hello, I\'m first section!\n'
@@ -246,8 +273,10 @@ class ThemeInitMakeExampleTestCase(unittest.TestCase):
         """Make the directories tree."""
         if one_source:
             name = 'alpha_one_source'
+            example = self.examples_one_source
         else:
-            name = 'alpha_multiple_source'
+            name = 'alpha_multiple_sources'
+            example = self.examples_multiple_sources
         theme = safe_load(StringIO(self.themes_config[name]))
         path_theme = path.dirname(theme['path'])
         makedirs(path.dirname(path_theme), exist_ok=True)
@@ -256,7 +285,7 @@ class ThemeInitMakeExampleTestCase(unittest.TestCase):
         dir_example = path.normpath(
             theme[config.SECTION_NAMES_CONFIG['example']])
         path_example = path.join(path_theme, dir_example)
-        for file_name, source in self.examples.items():
+        for file_name, source in example.items():
             path_file = path.join(path_example,
                                   path.normpath(file_name))
             makedirs(path.dirname(path_file), exist_ok=True)
@@ -297,13 +326,11 @@ class ThemeInitMakeExampleTestCase(unittest.TestCase):
             else:
                 content += '\n'
         content += '\n'
-        source_name = theme[
-            config.SECTION_NAMES_CONFIG['example']]['sources'][0]
-        content += self.examples[source_name]
+        content += self.examples_one_source[config.LTCONFIG['root_file']]
         with open(out_path, 'r', encoding='utf-8') as file:
             self.assertEqual(file.read(), content)
-        for file_name, source in self.examples.items():
-            if file_name == source_name:
+        for file_name, source in self.examples_one_source.items():
+            if file_name == config.LTCONFIG['root_file']:
                 continue
             file_path = path.join(self.out_dir.name,
                                   path.normpath(file_name))
@@ -320,12 +347,12 @@ class ThemeInitMakeExampleTestCase(unittest.TestCase):
         handler('alpha', project_name='my_project',
                 output_directory=self.out_dir.name,
                 embed=True, make_example=True)
-        out_path = path.join(self.out_dir.name,
-                             'my_project' + '.{}'.format(
-                                 config.LTCONFIG['source_ext']))
+        root_tex = 'my_project' + '.{}'.format(config.LTCONFIG['source_ext'])
+        out_path = path.join(self.out_dir.name, root_tex)
         self.assertTrue(path.exists(out_path))
         params = {'theme': 'alpha', 'project-name': 'my_project'}
-        theme = safe_load(StringIO(self.themes_config['alpha_multiple_source']))
+        theme = safe_load(StringIO(
+            self.themes_config['alpha_multiple_source']))
         params.update(theme.get('parameters', {}))
         params.update({
             'tex-options': [],
@@ -343,7 +370,9 @@ class ThemeInitMakeExampleTestCase(unittest.TestCase):
                 content += '\n'
         with open(out_path, 'r', encoding='utf-8') as file:
             self.assertEqual(file.read(), content)
-        for file_name, source in self.examples.items():
+        for file_name, source in self.examples_multiple_sources.items():
+            if file_name == config.LTCONFIG['root_tex']:
+                file_name = root_tex
             file_path = path.join(self.out_dir.name,
                                   path.normpath(file_name))
             self.assertTrue(path.exists(file_path))
@@ -370,11 +399,14 @@ class ThemeInitMakeExampleTestCase(unittest.TestCase):
             'tex-preambule': '',
             'tex-sources': theme.get(
                 config.SECTION_NAMES_CONFIG['example'],
-                {}).get('sources', [])[0]})
+                {}).get('sources', [])})
         content = safe_dump(params, sort_keys=False)
         with open(out_path, 'r', encoding='utf-8') as file:
             self.assertEqual(file.read(), content)
-        for file_name, source in self.examples.items():
+        for file_name, source in self.examples_one_source.items():
+            if file_name == config.LTCONFIG['root_file']:
+                file_name = 'my_project.{}'.format(
+                    config.LTCONFIG['source_ext'])
             file_path = path.join(self.out_dir.name,
                                   path.normpath(file_name))
             self.assertTrue(path.exists(file_path))
@@ -405,7 +437,10 @@ class ThemeInitMakeExampleTestCase(unittest.TestCase):
         content = safe_dump(params, sort_keys=False)
         with open(out_path, 'r', encoding='utf-8') as file:
             self.assertEqual(file.read(), content)
-        for file_name, source in self.examples.items():
+        for file_name, source in self.examples_multiple_sources.items():
+            if file_name == config.LTCONFIG['root_file']:
+                file_name = 'my_project.{}'.format(
+                    config.LTCONFIG['source_ext'])
             file_path = path.join(self.out_dir.name,
                                   path.normpath(file_name))
             self.assertTrue(path.exists(file_path))
