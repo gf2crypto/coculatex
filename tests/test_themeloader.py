@@ -162,7 +162,12 @@ class LoadParametersTestCase(unittest.TestCase):
     def test_load_example_param(self):
         """Test load `example` block."""
         section = config.SECTION_NAMES_CONFIG['example']
-        self.theme[section] = 'example/theme1'
+        self.theme[section] = {
+            'path': 'example/theme1',
+            'sources': [
+                'source1', 'source2'
+            ]
+            }
         with open(self.theme['path'], 'w') as file:
             file.write(safe_dump(self.theme))
         theme = load_theme(self.theme_name)
