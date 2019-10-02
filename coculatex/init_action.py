@@ -65,14 +65,13 @@ def __make_theme_parameters(theme_config,
 
 
 def __copy_example_files(output_directory,
-                         example_path,
-                         embed):
+                         example_path):
     """Copy the example files of a theme."""
     try:
         for src, dst in [(path.join(example_path, file),
                           path.join(output_directory, file))
                          for file in listdir(example_path)
-                         if embed and file == LTCONFIG['root_file']]:
+                         if file != LTCONFIG['root_file']]:
             if path.isdir(src):
                 copytree(src, dst)
             else:
@@ -83,12 +82,22 @@ def __copy_example_files(output_directory,
 
 def __write_init_file(theme_parameters,
                       output_directory,
+                      output_file,
                       example_root,
                       embed):
     """Write the root init file of a theme."""
     config_dump = dump(theme_parameters,
                        sort_keys=False,
                        allow_unicode=True)
+    if example_root:
+        try:
+            with open(example_root, 'r', encoding='utf-8') as file:
+                example_content = file.read()
+        except (FileNotFoundError, IOError, PermissionError) as error:
+            LOG.debug('Cannot read the file %s, error: %s',
+                      example_root,
+                      error)
+            example_content = ''
     if embed:
         content = ''
         for line in config_dump.split('\n'):
@@ -98,31 +107,34 @@ def __write_init_file(theme_parameters,
                     line)
             else:
                 content += '\n'
-        try:
-            with open(example_root, 'r', encoding='utf-8') as file:
-                content += file.read()
-        except (FileNotFoundError, IOError, PermissionError) as error:
-            LOG.debug('Cannot read the file %s, error: %s',
-                      example_root,
-                      error)
-        except NameError:
-            pass
+        content += example_content
+        config_file = output_file
     else:
-        output_file = path.join(output_directory,
+        config_file = path.join(output_directory,
                                 THEME_CONFIG_FILENAME)
         content = config_dump
     LOG.debug('The output file: %s', output_file)
     LOG.debug('The content of the theme configuration:\n%s', content)
     makedirs(output_directory, exist_ok=True)
     try:
-        with open(output_file, 'w', encoding='utf-8') as file:
+        with open(config_file, 'w', encoding='utf-8') as file:
             file.write(content)
     except (IOError, PermissionError) as error:
-        LOG.error('Sorry! I cannot write the output file %s. '
+        LOG.error('Sorry! I cannot write the configuration file %s. '
                   'Please, check the correctness and the '
                   'existence of the path and '
                   'the permissions it.\n'
-                  'The error: %s', output_file, error)
+                  'The error: %s', config_file, error)
+    if example_root and not embed:
+        try:
+            with open(output_file, 'w', encoding='utf-8') as file:
+                file.write(example_content)
+        except (IOError, PermissionError) as error:
+            LOG.error('Sorry! I cannot write the output file %s. '
+                      'Please, check the correctness and the '
+                      'existence of the path and '
+                      'the permissions it.\n'
+                      'The error: %s', output_file, error)
 
 
 def handler(theme,
@@ -149,29 +161,34 @@ def handler(theme,
     LOG.debug('The project name is %s', project_name)
     LOG.debug('The output directory is %s', output_directory)
     theme_config = load_theme(theme)
-    LOG.debug('The theme `%s` from is loaded: %s',
+    theme_path = path.dirname(theme_config['path'])
+    LOG.debug('The theme `%s` is loaded: %s',
               theme, theme_config)
     theme_parameters = __make_theme_parameters(theme_config,
                                                theme,
                                                project_name)
-    if embed:
-        output_file = path.join(
-            output_directory,
-            project_name + '.{}'.format(LTCONFIG['source_ext']))
-    else:
-        output_file = path.join(output_directory,
-                                THEME_CONFIG_FILENAME)
+
+    output_file = path.join(output_directory,
+                            '{}.{}'.format(project_name,
+                                           LTCONFIG['source_ext']))
     if make_example:
         example = theme_config.get(SECTION_NAMES_CONFIG['example'], {})
         example_path = example.get('path', '')
         example_sources = example.get('sources', [])
-        example_root = path.join(theme_config['path'],
+        example_root = path.join(theme_path,
                                  example_path,
                                  LTCONFIG['root_file'])
         if not embed:
             example_sources.append(path.basename(output_file))
-        theme_parameters.update({
-            PARAMETERS_NAMES_CONFIG['tex_sources']: example_sources})
+            theme_parameters.update({
+                PARAMETERS_NAMES_CONFIG['tex_sources']: example_sources})
 
-    __write_init_file(theme_parameters, output_directory, example_root, embed)
-    __copy_example_files(output_directory, example_path, embed)
+    __write_init_file(theme_parameters,
+                      output_directory,
+                      output_file,
+                      example_root,
+                      embed)
+
+    if make_example:
+        __copy_example_files(output_directory,
+                             path.join(theme_path, example_path))
