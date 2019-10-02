@@ -89,6 +89,7 @@ def __write_init_file(theme_parameters,
     config_dump = dump(theme_parameters,
                        sort_keys=False,
                        allow_unicode=True)
+    example_content = ''
     if example_root:
         try:
             with open(example_root, 'r', encoding='utf-8') as file:
@@ -97,7 +98,6 @@ def __write_init_file(theme_parameters,
             LOG.debug('Cannot read the file %s, error: %s',
                       example_root,
                       error)
-            example_content = ''
     if embed:
         content = ''
         for line in config_dump.split('\n'):
@@ -180,8 +180,10 @@ def handler(theme,
                                  LTCONFIG['root_file'])
         if not embed:
             example_sources.append(path.basename(output_file))
-            theme_parameters.update({
-                PARAMETERS_NAMES_CONFIG['tex_sources']: example_sources})
+        theme_parameters.update({
+            PARAMETERS_NAMES_CONFIG['tex_sources']: example_sources})
+    else:
+        example_root = None
 
     __write_init_file(theme_parameters,
                       output_directory,
