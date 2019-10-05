@@ -7,7 +7,7 @@ from os import (makedirs,
 from yaml import (safe_load,
                   safe_dump)
 import coculatex.config as config
-from coculatex.init_action import handler
+from coculatex.init_action import init_theme
 
 
 class ThemeInitTestCase(unittest.TestCase):
@@ -70,7 +70,7 @@ class ThemeInitTestCase(unittest.TestCase):
 
     def test_init_default_theme(self):
         """Test init the theme, default parameters."""
-        handler('alpha', output_directory=self.out_dir.name)
+        init_theme('alpha', output_directory=self.out_dir.name)
         out_path = path.join(self.out_dir.name,
                              config.THEME_CONFIG_FILENAME)
         self.assertTrue(path.exists(out_path))
@@ -85,7 +85,7 @@ class ThemeInitTestCase(unittest.TestCase):
 
     def test_init_embed_theme(self):
         """Test init the theme, embeded configuration."""
-        handler('alpha', output_directory=self.out_dir.name, embed=True)
+        init_theme('alpha', output_directory=self.out_dir.name, embed=True)
         out_path = path.join(self.out_dir.name,
                              'alpha' + '.{}'.format(
                                  config.LTCONFIG['source_ext']))
@@ -109,8 +109,8 @@ class ThemeInitTestCase(unittest.TestCase):
 
     def test_init_project_theme(self):
         """Test init the theme, specify project-name, not embed."""
-        handler('alpha', project_name='my_project',
-                output_directory=self.out_dir.name)
+        init_theme('alpha', project_name='my_project',
+                   output_directory=self.out_dir.name)
         out_path = path.join(self.out_dir.name,
                              config.THEME_CONFIG_FILENAME)
         self.assertTrue(path.exists(out_path))
@@ -125,8 +125,8 @@ class ThemeInitTestCase(unittest.TestCase):
 
     def test_init_project_embed_theme(self):
         """Test init the theme, specify project-name, embeded configuration."""
-        handler('alpha', project_name='my_project',
-                output_directory=self.out_dir.name, embed=True)
+        init_theme('alpha', project_name='my_project',
+                   output_directory=self.out_dir.name, embed=True)
         out_path = path.join(self.out_dir.name,
                              'my_project' + '.{}'.format(
                                  config.LTCONFIG['source_ext']))
@@ -303,9 +303,9 @@ class ThemeInitMakeExampleTestCase(unittest.TestCase):
         Example has one source file.
         """
         self.make_directories_tree()
-        handler('alpha', project_name='my_project',
-                output_directory=self.out_dir.name,
-                embed=True, make_example=True)
+        init_theme('alpha', project_name='my_project',
+                   output_directory=self.out_dir.name,
+                   embed=True, make_example=True)
         out_path = path.join(self.out_dir.name,
                              'my_project' + '.{}'.format(
                                  config.LTCONFIG['source_ext']))
@@ -343,9 +343,9 @@ class ThemeInitMakeExampleTestCase(unittest.TestCase):
         Example has multiple sources file.
         """
         self.make_directories_tree(one_source=False)
-        handler('alpha', project_name='my_project',
-                output_directory=self.out_dir.name,
-                embed=True, make_example=True)
+        init_theme('alpha', project_name='my_project',
+                   output_directory=self.out_dir.name,
+                   embed=True, make_example=True)
         root_tex = 'my_project' + '.{}'.format(config.LTCONFIG['source_ext'])
         out_path = path.join(self.out_dir.name, root_tex)
         self.assertTrue(path.exists(out_path))
@@ -385,9 +385,9 @@ class ThemeInitMakeExampleTestCase(unittest.TestCase):
         Example has one source file.
         """
         self.make_directories_tree()
-        handler('alpha', project_name='my_project',
-                output_directory=self.out_dir.name,
-                embed=False, make_example=True)
+        init_theme('alpha', project_name='my_project',
+                   output_directory=self.out_dir.name,
+                   embed=False, make_example=True)
         out_path = path.join(self.out_dir.name,
                              config.THEME_CONFIG_FILENAME)
         self.assertTrue(path.exists(out_path))
@@ -420,9 +420,9 @@ class ThemeInitMakeExampleTestCase(unittest.TestCase):
         Example has one source file.
         """
         self.make_directories_tree(one_source=False)
-        handler('alpha', project_name='my_project',
-                output_directory=self.out_dir.name,
-                embed=False, make_example=True)
+        init_theme('alpha', project_name='my_project',
+                   output_directory=self.out_dir.name,
+                   embed=False, make_example=True)
         out_path = path.join(self.out_dir.name,
                              config.THEME_CONFIG_FILENAME)
         self.assertTrue(path.exists(out_path))

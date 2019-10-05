@@ -39,9 +39,25 @@ def register(arg_parser):
                               'don\'t use the separate yaml-config file'
                               )
                         )
+    parser.add_argument('--make-example', '--example', '-x',
+                        action='store_true',
+                        default=False,
+                        help=('make example of the theme if '
+                              ' it is provided')
+                        )
     parser.add_argument('theme', action='store',
                         type=str, help=('the name of the theme'))
     parser.set_defaults(func=handler)
+
+
+def handler(args):
+    """Handle of the action."""
+    init_theme(theme=args.theme,
+               project_name=args.project_name,
+               output_directory=path.realpath(
+                   path.expanduser(args.output_path)),
+               embed=args.embed,
+               make_example=args.make_example)
 
 
 def __make_theme_parameters(theme_config,
@@ -137,11 +153,11 @@ def __write_init_file(theme_parameters,
                       'The error: %s', output_file, error)
 
 
-def handler(theme,
-            project_name=None,
-            output_directory=None,
-            embed=False,
-            make_example=False):
+def init_theme(theme,
+               project_name=None,
+               output_directory=None,
+               embed=False,
+               make_example=False):
     """Init the theme `theme` in the output directory.
 
     In the result of the function evaluation,
