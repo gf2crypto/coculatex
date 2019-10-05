@@ -6,7 +6,7 @@ from os import (makedirs,
                 path)
 from yaml import safe_load
 import coculatex.config as config
-from coculatex.list_action import (handler,
+from coculatex.list_action import (get_themes_list,
                                    SHIFT_SIZE)
 
 
@@ -114,12 +114,12 @@ class ListThemesTestCase(unittest.TestCase):
     def test_list_root_not_detailed(self):
         """Test list all themes, not detailed."""
         self.assertEqual(sorted('a b c '.split(' ')),
-                         sorted(handler().split(' ')))
+                         sorted(get_themes_list().split(' ')))
 
     def test_list_root_detailed(self):
         """Test list all themes, not detailed."""
         out_str = ''
-        for name in [n for n in handler().split(' ') if n]:
+        for name in [n for n in get_themes_list().split(' ') if n]:
             desc = self.themes[name].get(
                 config.SECTION_NAMES_CONFIG['description'],
                 'no description')
@@ -137,12 +137,12 @@ class ListThemesTestCase(unittest.TestCase):
                 ''.format(name=name, desc=desc,
                           shift=SHIFT_SIZE * ' ', subthemes=subthemes)
                 )
-        self.assertEqual(out_str, handler(detail=True))
+        self.assertEqual(out_str, get_themes_list(detail=True))
 
     def test_list_theme_not_detailed(self):
         """Test list all themes, not detailed."""
         self.assertEqual('a{sep}a1 a{sep}a2 a{sep}a3 '.format(
-            sep=config.THEME_NAME_SEP), handler('a'))
+            sep=config.THEME_NAME_SEP), get_themes_list('a'))
 
     def test_list_theme_detailed(self):
         """Test list all themes, not detailed."""
@@ -165,7 +165,7 @@ class ListThemesTestCase(unittest.TestCase):
                 ''.format(sep=config.THEME_NAME_SEP, name=name, desc=desc,
                           shift=SHIFT_SIZE * ' ', subthemes=subthemes)
                 )
-        self.assertEqual(out_str, handler('a', detail=True))
+        self.assertEqual(out_str, get_themes_list('a', detail=True))
 
 
 if __name__ == '__main__':

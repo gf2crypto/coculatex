@@ -25,7 +25,12 @@ def register(arg_parser):
     parser.set_defaults(func=handler)
 
 
-def handler(theme=None, detail=False):
+def handler(args):
+    """Handle of the action."""
+    get_themes_list(theme=args.theme, detail=args.detail)
+
+
+def get_themes_list(theme=None, detail=False):
     """Make the list of registered themes.
 
     :param: `str` theme - the name of the theme
