@@ -36,6 +36,14 @@ def register(arg_parser):
     parser.set_defaults(func=handler)
 
 
+def handler(args):
+    """Handle of the action."""
+    if args.config_file:
+        apply_theme(config_file=args.config_file)
+    else:
+        apply_theme(config_file=args.input, embed=True)
+
+
 def __find_config_file():
     """Find configuration file for the current path.
 
@@ -76,7 +84,7 @@ def __find_config_file():
     return '', False
 
 
-def handler(config_file=None, embed=False):
+def apply_theme(config_file=None, embed=False):
     """Create the theme files, using configuration file.
 
     In the result of the function evaluation,

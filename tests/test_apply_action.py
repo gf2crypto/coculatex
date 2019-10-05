@@ -6,7 +6,7 @@ from os import (makedirs,
 from yaml import (safe_load,
                   safe_dump)
 import coculatex.config as config
-from coculatex.apply_action import handler
+from coculatex.apply_action import apply_theme
 
 
 class ApplyThemeNotEmbedTestCase(unittest.TestCase):
@@ -103,7 +103,7 @@ class ApplyThemeNotEmbedTestCase(unittest.TestCase):
                 path.join(self.out_dir.name,
                           'saymyname.yaml'), 'w') as file:
             file.write(safe_dump(self.user_parameters))
-        handler(config_file=path.join(self.out_dir.name, 'saymyname.yaml'))
+        apply_theme(config_file=path.join(self.out_dir.name, 'saymyname.yaml'))
         self.assertTrue(path.exists(path.join(self.out_dir.name,
                                               'saymyname.tex')))
         self.assertTrue(path.exists(path.join(self.out_dir.name,
@@ -144,7 +144,7 @@ class ApplyThemeNotEmbedTestCase(unittest.TestCase):
                 path.join(self.out_dir.name,
                           'saymyname.yaml'), 'w') as file:
             file.write(safe_dump(self.user_parameters))
-        handler(config_file=path.join(self.out_dir.name, 'saymyname.yaml'))
+        apply_theme(config_file=path.join(self.out_dir.name, 'saymyname.yaml'))
         self.assertFalse(path.exists(path.join(self.out_dir.name,
                                                'saymyname.tex')))
         self.assertFalse(path.exists(path.join(self.out_dir.name,
@@ -159,7 +159,7 @@ class ApplyThemeNotEmbedTestCase(unittest.TestCase):
                 path.join(self.out_dir.name,
                           'saymyname.yaml'), 'w') as file:
             file.write(safe_dump(self.user_parameters))
-        handler(config_file=path.join(self.out_dir.name, 'saymyname.yaml'))
+        apply_theme(config_file=path.join(self.out_dir.name, 'saymyname.yaml'))
         self.assertFalse(path.exists(path.join(self.out_dir.name,
                                                'saymyname.tex')))
         self.assertFalse(path.exists(path.join(self.out_dir.name,
@@ -174,7 +174,7 @@ class ApplyThemeNotEmbedTestCase(unittest.TestCase):
                 path.join(self.out_dir.name,
                           'saymyname.yaml'), 'w') as file:
             file.write(safe_dump(self.user_parameters))
-        handler(config_file=path.join(self.out_dir.name, 'saymyname.yaml'))
+        apply_theme(config_file=path.join(self.out_dir.name, 'saymyname.yaml'))
         self.assertTrue(path.exists(path.join(self.out_dir.name,
                                               'saymyname.tex')))
         self.assertTrue(path.exists(path.join(self.out_dir.name,
@@ -217,7 +217,7 @@ class ApplyThemeNotEmbedTestCase(unittest.TestCase):
                 path.join(self.out_dir.name,
                           'saymyname.yaml'), 'w') as file:
             file.write(safe_dump(self.user_parameters))
-        handler(config_file=path.join(self.out_dir.name, 'saymyname.yaml'))
+        apply_theme(config_file=path.join(self.out_dir.name, 'saymyname.yaml'))
         self.assertTrue(path.exists(path.join(self.out_dir.name,
                                               'saymyname.tex')))
         self.assertTrue(path.exists(path.join(self.out_dir.name,
@@ -259,7 +259,7 @@ class ApplyThemeNotEmbedTestCase(unittest.TestCase):
                 path.join(self.out_dir.name,
                           'saymyname.yaml'), 'w') as file:
             file.write(safe_dump(self.user_parameters))
-        handler(config_file=path.join(self.out_dir.name, 'saymyname.yaml'))
+        apply_theme(config_file=path.join(self.out_dir.name, 'saymyname.yaml'))
         self.assertTrue(path.exists(path.join(self.out_dir.name,
                                               'saymyname.tex')))
         self.assertFalse(path.exists(path.join(self.out_dir.name,
