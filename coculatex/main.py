@@ -18,7 +18,7 @@ LOG = logging.getLogger(__name__)
 def init_logging(level=logging.ERROR):
     """Init logging facilities."""
     # create logger with __name__ of program
-    logger = logging.getLogger(__name__)
+    logger = logging.getLogger(PROGNAME)
     logger.setLevel(level)
     # create console handler with a higher log level
     handler = logging.StreamHandler()
