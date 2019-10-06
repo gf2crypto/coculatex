@@ -27,7 +27,7 @@ def register(arg_parser):
 
 def handler(args):
     """Handle of the action."""
-    get_themes_list(theme=args.theme, detail=args.detail)
+    print(get_themes_list(theme=args.theme, detail=args.detail))
 
 
 def get_themes_list(theme=None, detail=False):
