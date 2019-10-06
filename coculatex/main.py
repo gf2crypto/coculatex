@@ -1,8 +1,6 @@
 """The main script."""
-import os
 import logging
 import argparse
-from coculatex import config
 from coculatex import __version__ as VERSION
 from coculatex import __name__ as PROGNAME
 from coculatex import __author__ as AUTHOR
