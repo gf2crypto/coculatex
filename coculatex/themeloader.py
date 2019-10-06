@@ -125,7 +125,13 @@ def themes_iter(name=None):
             return
     else:
         LOG.debug('Init iterator over all registered themes')
-        theme_list = listdir(config.THEMES_PATH)
+        try:
+            theme_list = listdir(config.THEMES_PATH)
+        except FileNotFoundError:
+            LOG.warning('Theme\'s directory `%s` does not exist. '
+                        'Please place your themes to this path.',
+                        config.THEMES_PATH)
+            theme_list = []
 
     for theme in theme_list:
         subtheme_config = load_theme(theme)
